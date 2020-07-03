@@ -1,15 +1,16 @@
 package pl.polsl.utils.console;
 
+import pl.polsl.model.Distance;
 import pl.polsl.model.SolutionResults;
 
 import java.util.List;
 
 public class ConsoleUtils {
-    public void printInitialConditions(double[][] inputData, int numberOfNodes, int numberOfVehicles, int vehicleCapacity) {
+    public void printInitialConditions(Distance[][] inputData, int numberOfNodes, int numberOfVehicles, int vehicleCapacity) {
         System.out.print("Input: \n");
         for (int i = 0; i < numberOfNodes; i++) {
             for (int j = 0; j < numberOfNodes; j++) {
-                System.out.print(inputData[i][j] + "  ");
+                System.out.print(inputData[i][j].getDistance() + "  ");
             }
             System.out.println();
         }
@@ -28,5 +29,7 @@ public class ConsoleUtils {
             System.out.println();
         }
         System.out.println("Total distance traveled: " + results.getDistanceTraveled());
+        System.out.println("Total solution time: " + results.getTotalSolutionTime());
+        System.out.println("Total time waiting for time windows: " + results.getTimeSpentWaiting());
     }
 }

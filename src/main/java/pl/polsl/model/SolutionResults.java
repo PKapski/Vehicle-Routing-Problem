@@ -13,4 +13,6 @@ import java.util.Map;
 public class SolutionResults {
     private Map<Integer, ArrayList<Integer>> routesMap;
     private double distanceTraveled;
+    private double totalSolutionTime;
+    private double timeSpentWaiting;
 }
