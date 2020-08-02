@@ -15,4 +15,5 @@ public class SolutionResults {
     private double distanceTraveled;
     private double totalSolutionTime;
     private double timeSpentWaiting;
+    private Vehicle[] vehicles;
 }

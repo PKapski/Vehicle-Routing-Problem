@@ -4,6 +4,7 @@ import pl.polsl.model.SolutionMethod;
 import pl.polsl.model.SolutionResults;
 import pl.polsl.solutions.SolutionMethodStrategy;
 import pl.polsl.solutions.greedy.GreedyMethod;
+import pl.polsl.solutions.tabu.TabuMethod;
 import pl.polsl.utils.console.ConsoleUtils;
 import pl.polsl.utils.data.DataUtils;
 import pl.polsl.utils.files.FilesManager;
@@ -11,7 +12,6 @@ import pl.polsl.utils.files.FilesManager;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Objects;
 
 public class VRP_Main {
 
@@ -29,7 +29,7 @@ public class VRP_Main {
         int numberOfNodes = distances.length;
         int numberOfVehicles = Integer.parseInt(System.getProperty(NUMBER_OF_VEHICLES, "4"));
         int vehicleCapacity = Integer.parseInt(System.getProperty(VEHICLE_CAPACITY, "15"));
-        LocalTime startingTime = LocalTime.of(Integer.parseInt(System.getProperty(START_HOUR, "4")),0);
+        LocalTime startingTime = LocalTime.of(Integer.parseInt(System.getProperty(START_HOUR, "4")), 0);
         consoleUtils.printInitialConditions(distances, numberOfNodes, numberOfVehicles, vehicleCapacity);
 
         SolutionMethodStrategy strategy;
@@ -38,11 +38,14 @@ public class VRP_Main {
             case GREEDY:
                 strategy = new GreedyMethod();
                 break;
+            case TABU:
+                strategy = new TabuMethod();
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + System.getProperty(METHOD));
         }
         SolutionResults results = strategy.getSolution(nodes, distances, numberOfVehicles, vehicleCapacity, startingTime);
-        consoleUtils.printResults(numberOfVehicles, results);
+        consoleUtils.printResults(results);
     }
 
 

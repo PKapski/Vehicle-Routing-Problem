@@ -8,10 +8,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Vehicle {
+
     private int id;
     private double capacity;
     private double currentLoad;
     private int currentNode = 0;
+    private int routeTime;
+    private int routeWaitingTime;
 
     public Vehicle(int id, int capacity) {
         this.id = id;

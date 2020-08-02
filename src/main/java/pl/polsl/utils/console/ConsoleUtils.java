@@ -18,9 +18,9 @@ public class ConsoleUtils {
         System.out.println("Vehicle capacity: " + vehicleCapacity);
     }
 
-    public void printResults(int numberOfVehicles, SolutionResults results) {
+    public void printResults(SolutionResults results) {
         System.out.println("\n\nRESULTS:\n\nPaths:");
-        for (int i = 0; i < numberOfVehicles; i++) {
+        for (int i = 0; i < results.getRoutesMap().size(); i++) {
             System.out.print("Vehicle " + i + " path: ");
             List<Integer> list = results.getRoutesMap().get(i);
             for (Integer integer : list) {
