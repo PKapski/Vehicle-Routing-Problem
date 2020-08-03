@@ -22,4 +22,12 @@ public class Vehicle {
         currentLoad = capacity;
         currentNode = 0;
     }
+
+    public Vehicle(Vehicle veh) {
+        this.id = veh.getId();
+        this.capacity = veh.getCapacity();
+        this.currentLoad = veh.getCurrentLoad();
+        this.routeTime = veh.getRouteTime();
+        this.routeWaitingTime = veh.getRouteWaitingTime();
+    }
 }

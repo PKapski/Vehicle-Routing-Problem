@@ -21,7 +21,7 @@ public class ConsoleUtils {
     public void printResults(SolutionResults results) {
         System.out.println("\n\nRESULTS:\n\nPaths:");
         for (int i = 0; i < results.getRoutesMap().size(); i++) {
-            System.out.print("Vehicle " + i + " path: ");
+            System.out.print("Vehicle " + i + ": " + results.getVehicles()[i].getRouteTime() + "h, path: ");
             List<Integer> list = results.getRoutesMap().get(i);
             for (Integer integer : list) {
                 System.out.print(integer + " ");

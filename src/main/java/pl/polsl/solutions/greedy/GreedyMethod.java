@@ -35,7 +35,8 @@ public class GreedyMethod implements SolutionMethodStrategy {
             routesMap.get(i).add(0);
         }
         int nextNodeIndex;
-        while (numberOfNodes > 0) {
+        boolean terminate = false;
+        while (!terminate) {
             nextNodeIndex = getMinimumPossibleNodeId(distances[vehicles[currVehicleId].getCurrentNode()]);
             Distance currentPathDistance = distances[vehicles[currVehicleId].getCurrentNode()][nextNodeIndex];
             distanceTraveled += currentPathDistance.getDistance();
@@ -48,14 +49,22 @@ public class GreedyMethod implements SolutionMethodStrategy {
                 timeSpentWaiting += currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
             }
             currentVehicleRouteTime += nextNode.getServiceTime();
+            currentVehicleTime = currentVehicleTime.plusHours(nextNode.getServiceTime());
             routesMap.get(vehicles[currVehicleId].getId()).add(nextNodeIndex);
             if (nextNodeIndex == 0) {
+
                 currVehicleId++;
-                totalSolutionTime = Math.max(totalSolutionTime, currentVehicleRouteTime);
+                //totalSolutionTime = Math.max(totalSolutionTime, currentVehicleRouteTime);
+                totalSolutionTime += currentVehicleRouteTime;
+                vehicles[currVehicleId-1].setRouteTime(currentVehicleRouteTime);
                 currentVehicleRouteTime = 0;
                 currentVehicleTime = startingTime;
-                if (currVehicleId == numOfVehicles) {
-                    throw new InvalidAssumptionsError("No more vehicles available for other Nodes. Invalid assumptions.");
+                if (numberOfNodes == 0) {
+                    terminate = true;
+                } else {
+                    if (currVehicleId == numOfVehicles) {
+                        throw new InvalidAssumptionsError("No more vehicles available for other Nodes. Invalid assumptions.");
+                    }
                 }
             } else {
                 numberOfNodes--;
@@ -64,9 +73,9 @@ public class GreedyMethod implements SolutionMethodStrategy {
                 vehicles[currVehicleId].setCurrentNode(nextNodeIndex);
             }
         }
-        nextNodeIndex = 0;
-        distanceTraveled += distances[vehicles[currVehicleId].getCurrentNode()][nextNodeIndex].getDistance();
-        routesMap.get(vehicles[currVehicleId].getId()).add(nextNodeIndex);
+//        nextNodeIndex = 0;
+//        distanceTraveled += distances[vehicles[currVehicleId].getCurrentNode()][nextNodeIndex].getDistance();
+//        routesMap.get(vehicles[currVehicleId].getId()).add(nextNodeIndex);
         for (int i=0; i<routesMap.size(); i++) {
             if (routesMap.get(i).size() == 1) {
                 routesMap.remove(i);

@@ -16,4 +16,16 @@ public class SolutionResults {
     private double totalSolutionTime;
     private double timeSpentWaiting;
     private Vehicle[] vehicles;
+
+    public void copyRoutesMap(Map<Integer, ArrayList<Integer>> newRoute) {
+        for (int i = 0; i < routesMap.size(); i++) {
+            routesMap.put(i, new ArrayList<>(newRoute.get(i)));
+        }
+    }
+
+    public void copyVehicles(Vehicle[] newVehicles) {
+        for (int i = 0; i < vehicles.length; i++) {
+            vehicles[i] = new Vehicle(newVehicles[i]);
+        }
+    }
 }
