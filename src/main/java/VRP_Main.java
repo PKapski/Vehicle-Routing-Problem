@@ -33,7 +33,7 @@ public class VRP_Main {
         consoleUtils.printInitialConditions(distances, numberOfNodes, numberOfVehicles, vehicleCapacity);
 
         SolutionMethodStrategy strategy;
-        SolutionMethod method = SolutionMethod.valueOf(System.getProperty(METHOD, SolutionMethod.GREEDY.name()).toUpperCase());
+        SolutionMethod method = SolutionMethod.valueOf(System.getProperty(METHOD, SolutionMethod.TABU.name()).toUpperCase());
         switch (method) {
             case GREEDY:
                 strategy = new GreedyMethod();

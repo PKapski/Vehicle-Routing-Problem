@@ -12,7 +12,6 @@ public class Vehicle {
     private int id;
     private double capacity;
     private double currentLoad;
-    private int currentNode = 0;
     private int routeTime;
     private int routeWaitingTime;
 
@@ -20,7 +19,6 @@ public class Vehicle {
         this.id = id;
         this.capacity = capacity;
         currentLoad = capacity;
-        currentNode = 0;
     }
 
     public Vehicle(Vehicle veh) {
@@ -29,5 +27,9 @@ public class Vehicle {
         this.currentLoad = veh.getCurrentLoad();
         this.routeTime = veh.getRouteTime();
         this.routeWaitingTime = veh.getRouteWaitingTime();
+    }
+
+    public void decrementCurrentLoad(double value) {
+        currentLoad -= value;
     }
 }

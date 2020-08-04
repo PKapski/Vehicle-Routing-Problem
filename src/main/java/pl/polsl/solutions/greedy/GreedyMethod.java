@@ -24,6 +24,7 @@ public class GreedyMethod implements SolutionMethodStrategy {
         int numberOfNodes = nodes.size() - 1;
         double distanceTraveled = 0;
         int totalSolutionTime = 0, currentVehicleRouteTime = 0, timeSpentWaiting = 0;
+        int currentNode = 0;
         LocalTime currentVehicleTime = startingTime;
         this.nodes = nodes;
         currVehicleId = 0;
@@ -37,8 +38,8 @@ public class GreedyMethod implements SolutionMethodStrategy {
         int nextNodeIndex;
         boolean terminate = false;
         while (!terminate) {
-            nextNodeIndex = getMinimumPossibleNodeId(distances[vehicles[currVehicleId].getCurrentNode()]);
-            Distance currentPathDistance = distances[vehicles[currVehicleId].getCurrentNode()][nextNodeIndex];
+            nextNodeIndex = getMinimumPossibleNodeId(distances[currentNode]);
+            Distance currentPathDistance = distances[currentNode][nextNodeIndex];
             distanceTraveled += currentPathDistance.getDistance();
             currentVehicleRouteTime += currentPathDistance.getTime();
             currentVehicleTime = currentVehicleTime.plusHours(currentPathDistance.getTime());
@@ -54,11 +55,11 @@ public class GreedyMethod implements SolutionMethodStrategy {
             if (nextNodeIndex == 0) {
 
                 currVehicleId++;
-                //totalSolutionTime = Math.max(totalSolutionTime, currentVehicleRouteTime);
                 totalSolutionTime += currentVehicleRouteTime;
-                vehicles[currVehicleId-1].setRouteTime(currentVehicleRouteTime);
+                vehicles[currVehicleId - 1].setRouteTime(currentVehicleRouteTime);
                 currentVehicleRouteTime = 0;
                 currentVehicleTime = startingTime;
+                currentNode = 0;
                 if (numberOfNodes == 0) {
                     terminate = true;
                 } else {
@@ -68,15 +69,13 @@ public class GreedyMethod implements SolutionMethodStrategy {
                 }
             } else {
                 numberOfNodes--;
-                vehicles[currVehicleId].setCurrentLoad(vehicles[currVehicleId].getCurrentLoad() - nextNode.getDemand());
+                vehicles[currVehicleId].decrementCurrentLoad(nextNode.getDemand());
                 nextNode.setWasVisited(true);
-                vehicles[currVehicleId].setCurrentNode(nextNodeIndex);
+                currentNode = nextNodeIndex;
             }
         }
-//        nextNodeIndex = 0;
-//        distanceTraveled += distances[vehicles[currVehicleId].getCurrentNode()][nextNodeIndex].getDistance();
-//        routesMap.get(vehicles[currVehicleId].getId()).add(nextNodeIndex);
-        for (int i=0; i<routesMap.size(); i++) {
+
+        for (int i = 0; i < routesMap.size(); i++) {
             if (routesMap.get(i).size() == 1) {
                 routesMap.remove(i);
             }

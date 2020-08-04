@@ -6,6 +6,7 @@ import pl.polsl.model.SolutionResults;
 import java.util.List;
 
 public class ConsoleUtils {
+
     public void printInitialConditions(Distance[][] inputData, int numberOfNodes, int numberOfVehicles, int vehicleCapacity) {
         System.out.print("Input: \n");
         for (int i = 0; i < numberOfNodes; i++) {
