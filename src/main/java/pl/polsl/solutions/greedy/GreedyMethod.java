@@ -20,10 +20,12 @@ public class GreedyMethod implements SolutionMethodStrategy {
     private Vehicle[] vehicles;
     private int currVehicleId;
 
-    public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime currentTime) {
+    public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
         int numberOfNodes = nodes.size() - 1;
         double distanceTraveled = 0;
-        int totalSolutionTime = 0, currentVehicleTime = 0, timeSpentWaiting = 0;
+        int totalSolutionTime = 0, currentVehicleRouteTime = 0, timeSpentWaiting = 0;
+        int currentNode = 0;
+        LocalTime currentVehicleTime = startingTime;
         this.nodes = nodes;
         currVehicleId = 0;
         vehicles = new Vehicle[numOfVehicles];
@@ -34,44 +36,57 @@ public class GreedyMethod implements SolutionMethodStrategy {
             routesMap.get(i).add(0);
         }
         int nextNodeIndex;
-        while (numberOfNodes > 0) {
-            nextNodeIndex = getMinimumPossibleNodeId(distances[vehicles[currVehicleId].getCurrentNode()]);
-            Distance currentPathDistance = distances[vehicles[currVehicleId].getCurrentNode()][nextNodeIndex];
+        boolean terminate = false;
+        while (!terminate) {
+            nextNodeIndex = getMinimumPossibleNodeId(distances[currentNode]);
+            Distance currentPathDistance = distances[currentNode][nextNodeIndex];
             distanceTraveled += currentPathDistance.getDistance();
-            currentVehicleTime += currentPathDistance.getTime();
-            currentTime = currentTime.plusHours(currentPathDistance.getTime());
+            currentVehicleRouteTime += currentPathDistance.getTime();
+            currentVehicleTime = currentVehicleTime.plusHours(currentPathDistance.getTime());
             Node nextNode = nodes.get(nextNodeIndex);
-            if (currentTime.isAfter(nextNode.getAvailableTo()) || currentTime.isBefore(nextNode.getAvailableFrom())) {
-                long currentWaitingTime = Duration.between(currentTime, nextNode.getAvailableFrom()).toHours();
-                currentVehicleTime += currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
+            if (currentVehicleTime.isAfter(nextNode.getAvailableTo()) || currentVehicleTime.isBefore(nextNode.getAvailableFrom())) {
+                long currentWaitingTime = Duration.between(currentVehicleTime, nextNode.getAvailableFrom()).toHours();
+                currentVehicleRouteTime += currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
                 timeSpentWaiting += currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
             }
-            currentVehicleTime += nextNode.getServiceTime();
+            currentVehicleRouteTime += nextNode.getServiceTime();
+            currentVehicleTime = currentVehicleTime.plusHours(nextNode.getServiceTime());
             routesMap.get(vehicles[currVehicleId].getId()).add(nextNodeIndex);
             if (nextNodeIndex == 0) {
+
                 currVehicleId++;
-                if (currVehicleId == numOfVehicles) {
-                    throw new InvalidAssumptionsError("No more vehicles available for other Nodes. Invalid assumptions.");
+                totalSolutionTime += currentVehicleRouteTime;
+                vehicles[currVehicleId - 1].setRouteTime(currentVehicleRouteTime);
+                currentVehicleRouteTime = 0;
+                currentVehicleTime = startingTime;
+                currentNode = 0;
+                if (numberOfNodes == 0) {
+                    terminate = true;
+                } else {
+                    if (currVehicleId == numOfVehicles) {
+                        throw new InvalidAssumptionsError("No more vehicles available for other Nodes. Invalid assumptions.");
+                    }
                 }
             } else {
                 numberOfNodes--;
-                totalSolutionTime = Math.max(totalSolutionTime, currentVehicleTime);
-                currentVehicleTime = 0;
-                vehicles[currVehicleId].setCurrentLoad(vehicles[currVehicleId].getCurrentLoad() - nextNode.getDemand());
+                vehicles[currVehicleId].decrementCurrentLoad(nextNode.getDemand());
                 nextNode.setWasVisited(true);
-                vehicles[currVehicleId].setCurrentNode(nextNodeIndex);
+                currentNode = nextNodeIndex;
             }
         }
-        nextNodeIndex = 0;
-        distanceTraveled += distances[vehicles[currVehicleId].getCurrentNode()][nextNodeIndex].getDistance();
-        routesMap.get(vehicles[currVehicleId].getId()).add(nextNodeIndex);
 
-        return new SolutionResults(routesMap, distanceTraveled, totalSolutionTime, timeSpentWaiting);
+        for (int i = 0; i < routesMap.size(); i++) {
+            if (routesMap.get(i).size() == 1) {
+                routesMap.remove(i);
+            }
+        }
+
+        return new SolutionResults(routesMap, distanceTraveled, totalSolutionTime, timeSpentWaiting, vehicles);
     }
 
     public int getMinimumPossibleNodeId(Distance[] list) {
         int index = -1;
-        double minValue = 999999;
+        double minValue = Double.MAX_VALUE;
         for (int i = 1; i < list.length; i++) {
             if (!nodes.get(i).wasVisited && vehicles[currVehicleId].getCurrentLoad() - nodes.get(i).getDemand() >= 0) {
                 if (list[i].getDistance() < minValue) {

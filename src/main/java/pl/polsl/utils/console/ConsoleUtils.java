@@ -6,6 +6,7 @@ import pl.polsl.model.SolutionResults;
 import java.util.List;
 
 public class ConsoleUtils {
+
     public void printInitialConditions(Distance[][] inputData, int numberOfNodes, int numberOfVehicles, int vehicleCapacity) {
         System.out.print("Input: \n");
         for (int i = 0; i < numberOfNodes; i++) {
@@ -18,10 +19,10 @@ public class ConsoleUtils {
         System.out.println("Vehicle capacity: " + vehicleCapacity);
     }
 
-    public void printResults(int numberOfVehicles, SolutionResults results) {
+    public void printResults(SolutionResults results) {
         System.out.println("\n\nRESULTS:\n\nPaths:");
-        for (int i = 0; i < numberOfVehicles; i++) {
-            System.out.print("Vehicle " + i + " path: ");
+        for (int i = 0; i < results.getRoutesMap().size(); i++) {
+            System.out.print("Vehicle " + i + ": " + results.getVehicles()[i].getRouteTime() + "h, path: ");
             List<Integer> list = results.getRoutesMap().get(i);
             for (Integer integer : list) {
                 System.out.print(integer + " ");
