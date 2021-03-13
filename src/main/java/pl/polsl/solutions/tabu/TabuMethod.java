@@ -52,9 +52,9 @@ public class TabuMethod implements SolutionMethodStrategy {
                         for (int routeNodeIndex2 = 1; routeNodeIndex2 < routesMap.get(vehIndex2).size() - 1; routeNodeIndex2++) {
 
                             //try to insert node from veh1 to veh2
-                            if ((vehIndex1 == vehIndex2) || vehicles[vehIndex2].getCurrentLoad() - nodes.get(vehRoute1.get(routeNodeIndex1)).getDemand() >= 0) {
+                            if ((vehIndex1 == vehIndex2 && routeNodeIndex1 != routeNodeIndex2)
+                                    || (vehIndex1 != vehIndex2 && vehicles[vehIndex2].getCurrentLoad() >= nodes.get(vehRoute1.get(routeNodeIndex1)).getDemand())) {
 
-                                if (vehIndex1 != vehIndex2 || routeNodeIndex1 != routeNodeIndex2) {
                                     int removedNode = vehRoute1.remove(routeNodeIndex1);
                                     int addIndex = routeNodeIndex2;
                                     if (vehIndex1 != vehIndex2 || routeNodeIndex1 >= routeNodeIndex2) {
@@ -84,7 +84,6 @@ public class TabuMethod implements SolutionMethodStrategy {
                                         moveFromTimeChange = veh1TimeChange;
                                         moveToTimeChange = veh2TimeChange;
                                     }
-                                }
                             }
                         }
                     }
