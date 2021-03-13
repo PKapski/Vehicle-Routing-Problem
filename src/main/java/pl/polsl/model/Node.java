@@ -37,5 +37,9 @@ public class Node {
     @CsvBindByName(column = "serviceTime")
     private int serviceTime;
 
-    public boolean wasVisited = false;
+    public boolean visited = false;
+
+    public boolean isVisited() {
+        return visited;
+    }
 }

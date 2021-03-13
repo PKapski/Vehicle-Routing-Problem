@@ -23,37 +23,33 @@ public class GreedyMethod implements SolutionMethodStrategy {
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
         int numberOfNodes = nodes.size() - 1;
         double distanceTraveled = 0;
-        int totalSolutionTime = 0, currentVehicleRouteTime = 0, timeSpentWaiting = 0;
+        int totalSolutionTime = 0;
+        int currentVehicleRouteTime = 0;
+        int timeSpentWaiting = 0;
         int currentNode = 0;
         LocalTime currentVehicleTime = startingTime;
         this.nodes = nodes;
         currVehicleId = 0;
         vehicles = new Vehicle[numOfVehicles];
-        Map<Integer, ArrayList<Integer>> routesMap = new HashMap<>();
-        for (int i = 0; i < numOfVehicles; i++) {
-            vehicles[i] = new Vehicle(i, vehicleCapacity);
-            routesMap.put(i, new ArrayList<>());
-            routesMap.get(i).add(0);
-        }
-        int nextNodeIndex;
+        Map<Integer, ArrayList<Integer>> routesMap = initVehiclesAndRoutes(numOfVehicles, vehicleCapacity);
         boolean terminate = false;
         while (!terminate) {
-            nextNodeIndex = getMinimumPossibleNodeId(distances[currentNode]);
+            int nextNodeIndex = getMinimumPossibleNodeId(distances[currentNode]);
             Distance currentPathDistance = distances[currentNode][nextNodeIndex];
             distanceTraveled += currentPathDistance.getDistance();
             currentVehicleRouteTime += currentPathDistance.getTime();
             currentVehicleTime = currentVehicleTime.plusHours(currentPathDistance.getTime());
             Node nextNode = nodes.get(nextNodeIndex);
-            if (currentVehicleTime.isAfter(nextNode.getAvailableTo()) || currentVehicleTime.isBefore(nextNode.getAvailableFrom())) {
+            if (isNotInTimeWindow(currentVehicleTime, nextNode)) {
                 long currentWaitingTime = Duration.between(currentVehicleTime, nextNode.getAvailableFrom()).toHours();
-                currentVehicleRouteTime += currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
-                timeSpentWaiting += currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
+                currentWaitingTime = currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
+                currentVehicleRouteTime += currentWaitingTime;
+                timeSpentWaiting += currentWaitingTime;
             }
             currentVehicleRouteTime += nextNode.getServiceTime();
             currentVehicleTime = currentVehicleTime.plusHours(nextNode.getServiceTime());
             routesMap.get(vehicles[currVehicleId].getId()).add(nextNodeIndex);
             if (nextNodeIndex == 0) {
-
                 currVehicleId++;
                 totalSolutionTime += currentVehicleRouteTime;
                 vehicles[currVehicleId - 1].setRouteTime(currentVehicleRouteTime);
@@ -70,7 +66,7 @@ public class GreedyMethod implements SolutionMethodStrategy {
             } else {
                 numberOfNodes--;
                 vehicles[currVehicleId].decrementCurrentLoad(nextNode.getDemand());
-                nextNode.setWasVisited(true);
+                nextNode.setVisited(true);
                 currentNode = nextNodeIndex;
             }
         }
@@ -84,17 +80,33 @@ public class GreedyMethod implements SolutionMethodStrategy {
         return new SolutionResults(routesMap, distanceTraveled, totalSolutionTime, timeSpentWaiting, vehicles);
     }
 
+    private Map<Integer, ArrayList<Integer>> initVehiclesAndRoutes(int numOfVehicles, int vehicleCapacity) {
+        Map<Integer, ArrayList<Integer>> routesMap = new HashMap<>();
+        for (int i = 0; i < numOfVehicles; i++) {
+            vehicles[i] = new Vehicle(i, vehicleCapacity);
+            routesMap.put(i, new ArrayList<>());
+            routesMap.get(i).add(0);
+        }
+        return routesMap;
+    }
+
+    private boolean isNotInTimeWindow(LocalTime currentVehicleTime, Node nextNode) {
+        return currentVehicleTime.isAfter(nextNode.getAvailableTo()) || currentVehicleTime.isBefore(nextNode.getAvailableFrom());
+    }
+
     public int getMinimumPossibleNodeId(Distance[] list) {
         int index = -1;
-        double minValue = Double.MAX_VALUE;
         for (int i = 1; i < list.length; i++) {
-            if (!nodes.get(i).wasVisited && vehicles[currVehicleId].getCurrentLoad() - nodes.get(i).getDemand() >= 0) {
-                if (list[i].getDistance() < minValue) {
-                    minValue = list[i].getDistance();
-                    index = i;
-                }
+        double minValue = Double.MAX_VALUE;
+            if (canVisitNode(i) && list[i].getDistance() < minValue) {
+                minValue = list[i].getDistance();
+                index = i;
             }
         }
         return index == -1 ? 0 : index;
+    }
+
+    private boolean canVisitNode(int i) {
+        return !nodes.get(i).isVisited() && vehicles[currVehicleId].getCurrentLoad() >= nodes.get(i).getDemand();
     }
 }
