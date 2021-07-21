@@ -4,6 +4,7 @@ import pl.polsl.model.Distance;
 import pl.polsl.model.SolutionResults;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class ConsoleUtils {
 
@@ -19,7 +20,7 @@ public class ConsoleUtils {
         System.out.println("Vehicle capacity: " + vehicleCapacity);
     }
 
-    public void printResults(SolutionResults results) {
+    public void printResults(SolutionResults results, long executionTime) {
         System.out.println("\n\nRESULTS:\n\nPaths:");
         for (int i = 0; i < results.getRoutesMap().size(); i++) {
             System.out.print("Vehicle " + i + ": " + results.getVehicles()[i].getRouteTime() + "h, path: ");
@@ -29,6 +30,7 @@ public class ConsoleUtils {
             }
             System.out.println();
         }
+        System.out.println("Execution time: " + TimeUnit.SECONDS.convert(executionTime, TimeUnit.NANOSECONDS) + " s");
         System.out.println("Total distance traveled: " + results.getDistanceTraveled());
         System.out.println("Total solution time: " + results.getTotalSolutionTime());
         System.out.println("Total time waiting for time windows: " + results.getTimeSpentWaiting());

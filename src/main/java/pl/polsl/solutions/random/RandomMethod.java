@@ -1,4 +1,4 @@
-package pl.polsl.solutions.greedy;
+package pl.polsl.solutions.random;
 
 import pl.polsl.model.Distance;
 import pl.polsl.model.Node;
@@ -9,17 +9,15 @@ import pl.polsl.solutions.SolutionMethodStrategy;
 
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class GreedyMethod implements SolutionMethodStrategy {
+public class RandomMethod implements SolutionMethodStrategy {
 
     private List<Node> nodes;
     private Vehicle[] vehicles;
     private int currVehicleId;
 
+    @Override
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
         int numberOfNodes = nodes.size() - 1;
         double distanceTraveled = 0;
@@ -34,7 +32,7 @@ public class GreedyMethod implements SolutionMethodStrategy {
         Map<Integer, ArrayList<Integer>> routesMap = initVehiclesAndRoutes(numOfVehicles, vehicleCapacity);
         boolean terminate = false;
         while (!terminate) {
-            int nextNodeIndex = getMinimumPossibleNodeId(distances[currentNode]);
+            int nextNodeIndex = getNextNodeId();
             Distance currentPathDistance = distances[currentNode][nextNodeIndex];
             distanceTraveled += currentPathDistance.getDistance();
             currentVehicleRouteTime += currentPathDistance.getTime();
@@ -80,6 +78,17 @@ public class GreedyMethod implements SolutionMethodStrategy {
         return new SolutionResults(routesMap, distanceTraveled, totalSolutionTime, timeSpentWaiting, vehicles, nodes);
     }
 
+    private int getNextNodeId() {
+        int index = -1;
+        for (int i = 1; i < nodes.size(); i++) {
+            if (canVisitNode(i)) {
+                index = i;
+                break;
+            }
+        }
+        return index == -1 ? 0 : index;
+    }
+
     private Map<Integer, ArrayList<Integer>> initVehiclesAndRoutes(int numOfVehicles, int vehicleCapacity) {
         Map<Integer, ArrayList<Integer>> routesMap = new HashMap<>();
         for (int i = 0; i < numOfVehicles; i++) {
@@ -92,18 +101,6 @@ public class GreedyMethod implements SolutionMethodStrategy {
 
     private boolean isNotInTimeWindow(LocalTime currentVehicleTime, Node nextNode) {
         return currentVehicleTime.isAfter(nextNode.getAvailableTo()) || currentVehicleTime.isBefore(nextNode.getAvailableFrom());
-    }
-
-    public int getMinimumPossibleNodeId(Distance[] list) {
-        int index = -1;
-        double minValue = Double.MAX_VALUE;
-        for (int i = 1; i < list.length; i++) {
-            if (canVisitNode(i) && list[i].getDistance() < minValue) {
-                minValue = list[i].getDistance();
-                index = i;
-            }
-        }
-        return index == -1 ? 0 : index;
     }
 
     private boolean canVisitNode(int i) {

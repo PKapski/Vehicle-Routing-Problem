@@ -1,4 +1,4 @@
-package pl.polsl.solutions.tabu;
+package pl.polsl.solutions.simulatedannealing;
 
 import pl.polsl.model.Distance;
 import pl.polsl.model.Node;
@@ -6,7 +6,6 @@ import pl.polsl.model.SolutionResults;
 import pl.polsl.model.Vehicle;
 import pl.polsl.solutions.SolutionMethodStrategy;
 import pl.polsl.solutions.greedy.GreedyMethod;
-import pl.polsl.solutions.random.RandomMethod;
 
 import java.time.Duration;
 import java.time.LocalTime;
@@ -14,13 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class TabuMethod implements SolutionMethodStrategy {
+public class SimulatedAnnealingMethod implements SolutionMethodStrategy {
 
-    private static final int MAX_ITERATIONS = 1000;
+    private static final int MAX_ITERATIONS = 10000;
+    private static final double coolingFactor = 0.98; //range: <0.8,0.99>
+    private double currentTemperature = 1000.0;
     private Distance[][] distances;
     private List<Node> nodes;
     private LocalTime startingTime;
-    private int[][] tabuMatrix;
 
     @Override
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
@@ -70,11 +70,6 @@ public class TabuMethod implements SolutionMethodStrategy {
 
                                 int timeDelta = veh1TimeChange + veh2TimeChange;
 
-                                //Tabu && other aspiration condition (current solution better than best found solution)
-                                if (tabuMatrix[removedNode][vehIndex2] > 0 && currBestSolutionTime + timeDelta >= solution.getTotalSolutionTime()) {
-                                    continue;
-                                }
-
                                 if (timeDelta < bestIterationTimeDelta) {
                                     bestIterationTimeDelta = timeDelta;
                                     moveFromVehicle = vehIndex1;
@@ -90,12 +85,13 @@ public class TabuMethod implements SolutionMethodStrategy {
                 }
             }
 
-            decrementTabuMatrix();
+            if (bestIterationTimeDelta >= 0 && Math.random() >= Math.exp(bestIterationTimeDelta/currentTemperature)) {
+                currentTemperature *= coolingFactor;
+                continue;
+            }
             currBestSolutionTime += bestIterationTimeDelta;
-            System.out.println("Moved from veh " + moveFromVehicle + " to " + moveToVehicle + " node from " + moveIndexFrom + " to " + moveIndexTo);
             int movedNode = routesMap.get(moveFromVehicle).remove(moveIndexFrom);
             routesMap.get(moveToVehicle).add(moveIndexTo, movedNode);
-            tabuMatrix[movedNode][moveToVehicle] += 5;
 
             vehicles[moveFromVehicle].setRouteTime(vehicles[moveFromVehicle].getRouteTime() + moveFromTimeChange);
             vehicles[moveFromVehicle].decrementCurrentLoad(-nodes.get(movedNode).getDemand());
@@ -110,19 +106,8 @@ public class TabuMethod implements SolutionMethodStrategy {
             }
         }
         solution.calculateFinalSolutionValues(nodes, distances, startingTime);
+        currentTemperature *= coolingFactor;
         return solution;
-    }
-
-    public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime, int usedVehicles) {
-        this.distances = distances;
-        this.nodes = nodes;
-        this.startingTime = startingTime;
-        this.tabuMatrix = new int[nodes.size()][usedVehicles];
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = 0; j < usedVehicles; j++) {
-                tabuMatrix[i][j] = 0;
-            }
-        }
     }
 
     public int calculateRouteTime(ArrayList<Integer> route) {
@@ -143,13 +128,9 @@ public class TabuMethod implements SolutionMethodStrategy {
         return totalRouteTime;
     }
 
-    public void decrementTabuMatrix() {
-        for (int i = 0; i < tabuMatrix.length; i++) {
-            for (int j = 0; j < tabuMatrix[i].length; j++) {
-                tabuMatrix[i][j]--;
-            }
-        }
+    public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime, int usedVehicles) {
+        this.distances = distances;
+        this.nodes = nodes;
+        this.startingTime = startingTime;
     }
-
-
 }

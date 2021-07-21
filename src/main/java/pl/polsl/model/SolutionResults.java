@@ -20,6 +20,7 @@ public class SolutionResults {
     private double totalSolutionTime;
     private double timeSpentWaiting;
     private Vehicle[] vehicles;
+    private List<Node> nodes;
 
     public void copyRoutesMap(Map<Integer, ArrayList<Integer>> newRoute) {
         for (int i = 0; i < routesMap.size(); i++) {
