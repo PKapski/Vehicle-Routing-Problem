@@ -5,29 +5,26 @@ import pl.polsl.model.Node;
 import pl.polsl.model.SolutionResults;
 import pl.polsl.model.Vehicle;
 import pl.polsl.solutions.SolutionMethodStrategy;
+import pl.polsl.solutions.VRPSolutionMethod;
 import pl.polsl.solutions.greedy.GreedyMethod;
 
-import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class SimulatedAnnealingMethod implements SolutionMethodStrategy {
+public class SimulatedAnnealingMethod extends VRPSolutionMethod implements SolutionMethodStrategy {
 
-    private static final int MAX_ITERATIONS = 10000;
-    private static final double coolingFactor = 0.98; //range: <0.8,0.99>
+    private static final int MAX_ITERATIONS = 1000;
+    private static final double coolingFactor = 0.99; //range: <0.8,0.99>
     private double currentTemperature = 1000.0;
-    private Distance[][] distances;
-    private List<Node> nodes;
-    private LocalTime startingTime;
 
     @Override
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
         SolutionResults solution = new GreedyMethod().getSolution(nodes, distances, numOfVehicles, vehicleCapacity, startingTime);
         Map<Integer, ArrayList<Integer>> routesMap = solution.getRoutesMap();
         int usedVehicles = routesMap.size();
-        initializeVariables(nodes, distances, startingTime, usedVehicles);
+        initializeVariables(nodes, distances, startingTime);
 
         Vehicle[] vehicles = new Vehicle[solution.getVehicles().length];
         for (int i = 0; i < vehicles.length; i++) {
@@ -43,6 +40,7 @@ public class SimulatedAnnealingMethod implements SolutionMethodStrategy {
 
         while (iterationCount != MAX_ITERATIONS) {
             iterationCount++;
+            boolean swapNodes = false;
             double bestIterationTimeDelta = Double.MAX_VALUE;
             for (int vehIndex1 = 0; vehIndex1 < usedVehicles; vehIndex1++) {
                 ArrayList<Integer> vehRoute1 = routesMap.get(vehIndex1);
@@ -51,33 +49,67 @@ public class SimulatedAnnealingMethod implements SolutionMethodStrategy {
                         ArrayList<Integer> vehRoute2 = routesMap.get(vehIndex2);
                         for (int routeNodeIndex2 = 1; routeNodeIndex2 < routesMap.get(vehIndex2).size() - 2; routeNodeIndex2++) {
 
-                            //try to insert node from veh1 to veh2
-                            if ((vehIndex1 == vehIndex2 && routeNodeIndex1 != routeNodeIndex2)
-                                    || (vehIndex1 != vehIndex2 && vehicles[vehIndex2].getCurrentLoad() >= nodes.get(vehRoute1.get(routeNodeIndex1)).getDemand())) {
+                            if (swapNodes) {
+                                //try to swap nodes between veh1 to veh2
+                                if ((vehIndex1 == vehIndex2 && routeNodeIndex1 != routeNodeIndex2)
+                                        || (vehIndex1 != vehIndex2
+                                        && vehicles[vehIndex1].getCurrentFreeLoad() >= nodes.get(vehRoute2.get(routeNodeIndex2)).getDemand() - nodes.get(vehRoute1.get(routeNodeIndex1)).getDemand()
+                                        && vehicles[vehIndex2].getCurrentFreeLoad() >= nodes.get(vehRoute1.get(routeNodeIndex1)).getDemand() - nodes.get(vehRoute2.get(routeNodeIndex2)).getDemand())) {
 
-                                int removedNode = vehRoute1.remove(routeNodeIndex1);
-                                int addIndex = routeNodeIndex2;
-                                if (vehIndex1 != vehIndex2 || routeNodeIndex1 < routeNodeIndex2) {
-                                    addIndex++;
+                                    int swapValue1 = vehRoute1.get(routeNodeIndex1);
+                                    int swapValue2 = vehRoute2.get(routeNodeIndex2);
+
+                                    vehRoute1.set(routeNodeIndex1, swapValue2);
+                                    vehRoute2.set(routeNodeIndex2, swapValue1);
+
+                                    int veh1TimeChange = calculateRouteTime(vehRoute1) - vehicles[vehIndex1].getRouteTime();
+                                    int veh2TimeChange = (vehIndex1 == vehIndex2) ? 0 : calculateRouteTime(vehRoute2) - vehicles[vehIndex2].getRouteTime();
+
+                                    vehRoute1.set(routeNodeIndex1, swapValue1);
+                                    vehRoute2.set(routeNodeIndex2, swapValue2);
+
+                                    int timeDelta = veh1TimeChange + veh2TimeChange;
+
+                                    if (timeDelta < bestIterationTimeDelta) {
+                                        bestIterationTimeDelta = timeDelta;
+                                        moveFromVehicle = vehIndex1;
+                                        moveToVehicle = vehIndex2;
+                                        moveIndexFrom = routeNodeIndex1;
+                                        moveIndexTo = routeNodeIndex2;
+                                        moveFromTimeChange = veh1TimeChange;
+                                        moveToTimeChange = veh2TimeChange;
+                                    }
+
                                 }
-                                vehRoute2.add(addIndex, removedNode);
+                            } else {
+                                //try to insert node from veh1 to veh2
+                                if ((vehIndex1 == vehIndex2 && routeNodeIndex1 != routeNodeIndex2)
+                                        || (vehIndex1 != vehIndex2 && vehicles[vehIndex2].getCurrentFreeLoad() >= nodes.get(vehRoute1.get(routeNodeIndex1)).getDemand())) {
 
-                                int veh1TimeChange = calculateRouteTime(vehRoute1) - vehicles[vehIndex1].getRouteTime();
-                                int veh2TimeChange = (vehIndex1 == vehIndex2) ? 0 : calculateRouteTime(vehRoute2) - vehicles[vehIndex2].getRouteTime();
+                                    int removedNode = vehRoute1.remove(routeNodeIndex1);
+                                    int addIndex = routeNodeIndex2;
+                                    if (vehIndex1 != vehIndex2 || routeNodeIndex1 < routeNodeIndex2) {
+                                        addIndex++;
+                                    }
+                                    vehRoute2.add(addIndex, removedNode);
 
-                                vehRoute2.remove(addIndex);
-                                vehRoute1.add(routeNodeIndex1, removedNode);
+                                    int veh1TimeChange = calculateRouteTime(vehRoute1) - vehicles[vehIndex1].getRouteTime();
+                                    int veh2TimeChange = (vehIndex1 == vehIndex2) ? 0 : calculateRouteTime(vehRoute2) - vehicles[vehIndex2].getRouteTime();
 
-                                int timeDelta = veh1TimeChange + veh2TimeChange;
+                                    vehRoute2.remove(addIndex);
+                                    vehRoute1.add(routeNodeIndex1, removedNode);
 
-                                if (timeDelta < bestIterationTimeDelta) {
-                                    bestIterationTimeDelta = timeDelta;
-                                    moveFromVehicle = vehIndex1;
-                                    moveToVehicle = vehIndex2;
-                                    moveIndexFrom = routeNodeIndex1;
-                                    moveIndexTo = addIndex;
-                                    moveFromTimeChange = veh1TimeChange;
-                                    moveToTimeChange = veh2TimeChange;
+                                    int timeDelta = veh1TimeChange + veh2TimeChange;
+
+                                    if (timeDelta < bestIterationTimeDelta) {
+                                        bestIterationTimeDelta = timeDelta;
+                                        moveFromVehicle = vehIndex1;
+                                        moveToVehicle = vehIndex2;
+                                        moveIndexFrom = routeNodeIndex1;
+                                        moveIndexTo = addIndex;
+                                        moveFromTimeChange = veh1TimeChange;
+                                        moveToTimeChange = veh2TimeChange;
+                                    }
                                 }
                             }
                         }
@@ -85,50 +117,49 @@ public class SimulatedAnnealingMethod implements SolutionMethodStrategy {
                 }
             }
 
-            if (bestIterationTimeDelta >= 0 && Math.random() >= Math.exp(bestIterationTimeDelta/currentTemperature)) {
+            if (bestIterationTimeDelta == 0.0) {
+                System.out.println("Pojazd " + moveFromVehicle + " node " + moveIndexFrom + " do " + moveToVehicle + " node " + moveIndexTo);
+            }
+
+            if (bestIterationTimeDelta > 0 && Math.random() >= Math.exp(bestIterationTimeDelta / currentTemperature)) {
                 currentTemperature *= coolingFactor;
                 continue;
             }
+
             currBestSolutionTime += bestIterationTimeDelta;
-            int movedNode = routesMap.get(moveFromVehicle).remove(moveIndexFrom);
-            routesMap.get(moveToVehicle).add(moveIndexTo, movedNode);
+            if (swapNodes) {
+                int swapValue1 = routesMap.get(moveFromVehicle).get(moveIndexFrom);
+                int swapValue2 = routesMap.get(moveToVehicle).get(moveIndexTo);
+
+                routesMap.get(moveFromVehicle).set(moveIndexFrom, swapValue2);
+                routesMap.get(moveToVehicle).set(moveIndexTo, swapValue1);
+
+                vehicles[moveFromVehicle].incrementCurrentFreeLoad(nodes.get(swapValue1).getDemand() - nodes.get(swapValue2).getDemand());
+                vehicles[moveToVehicle].incrementCurrentFreeLoad(nodes.get(swapValue2).getDemand() - nodes.get(swapValue1).getDemand());
+
+            } else {
+                int movedNode = routesMap.get(moveFromVehicle).remove(moveIndexFrom);
+                routesMap.get(moveToVehicle).add(moveIndexTo, movedNode);
+                vehicles[moveFromVehicle].incrementCurrentFreeLoad(nodes.get(movedNode).getDemand());
+                vehicles[moveToVehicle].decrementCurrentFreeLoad(nodes.get(movedNode).getDemand());
+            }
 
             vehicles[moveFromVehicle].setRouteTime(vehicles[moveFromVehicle].getRouteTime() + moveFromTimeChange);
-            vehicles[moveFromVehicle].decrementCurrentLoad(-nodes.get(movedNode).getDemand());
             vehicles[moveToVehicle].setRouteTime(vehicles[moveToVehicle].getRouteTime() + moveToTimeChange);
-            vehicles[moveToVehicle].decrementCurrentLoad(nodes.get(movedNode).getDemand());
 
-            if (currBestSolutionTime < solution.getTotalSolutionTime()) {
-                solution.copyRoutesMap(routesMap);
-                solution.setTotalSolutionTime(currBestSolutionTime);
-                solution.copyVehicles(vehicles);
-                System.out.println("Nowe najlepsze rozw w iteracji " + iterationCount);
-            }
+//            if (currBestSolutionTime < solution.getTotalSolutionTime()) {
+            solution.copyRoutesMap(routesMap);
+            solution.setTotalSolutionTime(currBestSolutionTime);
+            solution.copyVehicles(vehicles);
+//                System.out.println("Nowe najlepsze rozw w iteracji " + iterationCount);
+//            }
+            currentTemperature *= coolingFactor;
         }
         solution.calculateFinalSolutionValues(nodes, distances, startingTime);
-        currentTemperature *= coolingFactor;
         return solution;
     }
 
-    public int calculateRouteTime(ArrayList<Integer> route) {
-        int totalRouteTime = 0;
-        LocalTime localTime = startingTime;
-        for (int i = 0; i < route.size() - 1; i++) {
-            int timeBetweenNodes = distances[route.get(i)][route.get(i + 1)].getTime();
-            totalRouteTime += timeBetweenNodes;
-            localTime = localTime.plusHours(timeBetweenNodes);
-            Node nextNode = nodes.get(route.get(i + 1));
-            if (localTime.isAfter(nextNode.getAvailableTo()) || localTime.isBefore(nextNode.getAvailableFrom())) {
-                long currentWaitingTime = Duration.between(localTime, nextNode.getAvailableFrom()).toHours();
-                totalRouteTime += currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
-            }
-            totalRouteTime += nextNode.getServiceTime();
-            localTime = localTime.plusHours(nextNode.getServiceTime());
-        }
-        return totalRouteTime;
-    }
-
-    public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime, int usedVehicles) {
+    public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime) {
         this.distances = distances;
         this.nodes = nodes;
         this.startingTime = startingTime;

@@ -6,16 +6,13 @@ import pl.polsl.model.SolutionResults;
 import pl.polsl.model.Vehicle;
 import pl.polsl.solutions.InvalidAssumptionsError;
 import pl.polsl.solutions.SolutionMethodStrategy;
+import pl.polsl.solutions.VRPInitialSolutionMethod;
 
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
 
-public class RandomMethod implements SolutionMethodStrategy {
-
-    private List<Node> nodes;
-    private Vehicle[] vehicles;
-    private int currVehicleId;
+public class RandomMethod extends VRPInitialSolutionMethod implements SolutionMethodStrategy {
 
     @Override
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
@@ -63,7 +60,7 @@ public class RandomMethod implements SolutionMethodStrategy {
                 }
             } else {
                 numberOfNodes--;
-                vehicles[currVehicleId].decrementCurrentLoad(nextNode.getDemand());
+                vehicles[currVehicleId].decrementCurrentFreeLoad(nextNode.getDemand());
                 nextNode.setVisited(true);
                 currentNode = nextNodeIndex;
             }
@@ -87,23 +84,5 @@ public class RandomMethod implements SolutionMethodStrategy {
             }
         }
         return index == -1 ? 0 : index;
-    }
-
-    private Map<Integer, ArrayList<Integer>> initVehiclesAndRoutes(int numOfVehicles, int vehicleCapacity) {
-        Map<Integer, ArrayList<Integer>> routesMap = new HashMap<>();
-        for (int i = 0; i < numOfVehicles; i++) {
-            vehicles[i] = new Vehicle(i, vehicleCapacity);
-            routesMap.put(i, new ArrayList<>());
-            routesMap.get(i).add(0);
-        }
-        return routesMap;
-    }
-
-    private boolean isNotInTimeWindow(LocalTime currentVehicleTime, Node nextNode) {
-        return currentVehicleTime.isAfter(nextNode.getAvailableTo()) || currentVehicleTime.isBefore(nextNode.getAvailableFrom());
-    }
-
-    private boolean canVisitNode(int i) {
-        return !nodes.get(i).isVisited() && vehicles[currVehicleId].getCurrentLoad() >= nodes.get(i).getDemand();
     }
 }

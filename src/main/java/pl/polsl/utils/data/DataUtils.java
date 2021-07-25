@@ -17,7 +17,7 @@ public class DataUtils {
                 yDiff = nodes.get(i).getY() - nodes.get(j).getY();
                 distances[i][j] = new Distance();
                 distances[i][j].setDistance(Math.round(Math.sqrt((xDiff * xDiff) + (yDiff * yDiff)) * 100) / 100.0);
-                distances[i][j].setTime((int) Math.round(distances[i][j].getDistance() / 5));
+                distances[i][j].setTime((int) Math.round(distances[i][j].getDistance() / 100));
             }
         }
         return distances;

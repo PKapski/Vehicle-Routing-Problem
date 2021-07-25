@@ -26,27 +26,32 @@ public class VRP_Main_Fx extends Application {
 
     @Override
     public void start(Stage stage) {
+        Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.BLACK, Color.PINK, Color.ORANGE, Color.YELLOW, Color.BROWN};
+
         Map<Integer, Node> nodesMap = getNodesMap();
         Group root = new Group();
         Circle circle = createCircle(results.getNodes().get(0), Color.RED);
         root.getChildren().add(circle);
+        int vehicleIndex = 0;
         for (ArrayList<Integer> route : results.getRoutesMap().values()) {
             if (route.size() == 1) {
                 continue;
             }
-
+            Color color = colors[vehicleIndex];
             for (int i = 0; i < route.size() - 1; i++) {
                 if (route.get(i + 1) != 0) {
                     circle = createCircle(nodesMap.get(route.get(i + 1)), Color.BLACK);
                     root.getChildren().add(circle);
                 }
                 Line line = new Line();
+                line.setStroke(color);
                 line.setStartX(nodesMap.get(route.get(i)).getX());
                 line.setStartY(nodesMap.get(route.get(i)).getY());
                 line.setEndX(nodesMap.get(route.get(i + 1)).getX());
                 line.setEndY(nodesMap.get(route.get(i + 1)).getY());
                 root.getChildren().add(line);
             }
+            vehicleIndex++;
         }
 
         Scene scene = new Scene(root, 800, 800);
