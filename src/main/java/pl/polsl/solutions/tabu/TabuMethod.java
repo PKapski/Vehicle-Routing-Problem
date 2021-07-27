@@ -130,7 +130,6 @@ public class TabuMethod extends VRPSolutionMethod implements SolutionMethodStrat
                 }
             }
 
-            System.out.println(bestIterationTimeDelta);
             decrementTabuMatrix(swapNodes);
             currBestSolutionTime += bestIterationTimeDelta;
             if (swapNodes) {
