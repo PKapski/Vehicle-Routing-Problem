@@ -7,9 +7,7 @@ import pl.polsl.model.Vehicle;
 import pl.polsl.solutions.SolutionMethodStrategy;
 import pl.polsl.solutions.VRPSolutionMethod;
 import pl.polsl.solutions.greedy.GreedyMethod;
-import pl.polsl.solutions.random.RandomMethod;
 
-import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +24,8 @@ public class TabuMethod extends VRPSolutionMethod implements SolutionMethodStrat
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
         SolutionResults solution = new GreedyMethod().getSolution(nodes, distances, numOfVehicles, vehicleCapacity, startingTime);
         Map<Integer, ArrayList<Integer>> routesMap = solution.getRoutesMap();
-        int usedVehicles = routesMap.size();
-        initializeVariables(nodes, distances, startingTime, usedVehicles);
+        int vehiclesCount = routesMap.size();
+        initializeVariables(nodes, distances, startingTime, vehiclesCount);
 
         Vehicle[] vehicles = new Vehicle[solution.getVehicles().length];
         for (int i = 0; i < vehicles.length; i++) {
@@ -45,10 +43,10 @@ public class TabuMethod extends VRPSolutionMethod implements SolutionMethodStrat
             iterationCount++;
             boolean swapNodes = iterationCount % 2 == 0;
             double bestIterationTimeDelta = Double.MAX_VALUE;
-            for (int vehIndex1 = 0; vehIndex1 < usedVehicles; vehIndex1++) {
+            for (int vehIndex1 = 0; vehIndex1 < vehiclesCount; vehIndex1++) {
                 ArrayList<Integer> vehRoute1 = routesMap.get(vehIndex1);
                 for (int routeNodeIndex1 = 1; routeNodeIndex1 < routesMap.get(vehIndex1).size() - 2; routeNodeIndex1++) {
-                    for (int vehIndex2 = 0; vehIndex2 < usedVehicles; vehIndex2++) {
+                    for (int vehIndex2 = 0; vehIndex2 < vehiclesCount; vehIndex2++) {
                         ArrayList<Integer> vehRoute2 = routesMap.get(vehIndex2);
                         for (int routeNodeIndex2 = 1; routeNodeIndex2 < routesMap.get(vehIndex2).size() - 2; routeNodeIndex2++) {
 
@@ -158,7 +156,6 @@ public class TabuMethod extends VRPSolutionMethod implements SolutionMethodStrat
                 solution.copyRoutesMap(routesMap);
                 solution.setTotalSolutionTime(currBestSolutionTime);
                 solution.copyVehicles(vehicles);
-//                System.out.println("Nowe najlepsze rozw w iteracji " + iterationCount);
             }
         }
         solution.calculateFinalSolutionValues(nodes, distances, startingTime);
@@ -166,12 +163,11 @@ public class TabuMethod extends VRPSolutionMethod implements SolutionMethodStrat
     }
 
     public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime, int usedVehicles) {
-        this.distances = distances;
-        this.nodes = nodes;
-        this.startingTime = startingTime;
-        this.swapTabuMatrix = new int[nodes.size()][nodes.size()];
-        this.putTabuMatrix = new int[nodes.size()][usedVehicles];
-        for (int i = 0; i < nodes.size(); i++) {
+        super.initializeVariables(nodes, distances, startingTime);
+        int nodesCount = nodes.size();
+        this.swapTabuMatrix = new int[nodesCount][nodesCount];
+        this.putTabuMatrix = new int[nodesCount][usedVehicles];
+        for (int i = 0; i < nodesCount; i++) {
             for (int j = 0; j < usedVehicles; j++) {
                 putTabuMatrix[i][j] = 0;
             }

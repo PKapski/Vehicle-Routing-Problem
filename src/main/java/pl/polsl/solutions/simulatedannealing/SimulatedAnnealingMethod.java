@@ -16,8 +16,9 @@ import java.util.Random;
 
 public class SimulatedAnnealingMethod extends VRPSolutionMethod implements SolutionMethodStrategy {
 
-    private static final int ITERATION_ATTEMPTS = 20;
-    private static final double coolingFactor = 0.98; //range: <0.8,0.99>
+    private static final int ITERATION_ATTEMPTS = 50;
+    private static final double COOLING_FACTOR = 0.98; //range: <0.8,0.99>
+    private static final double TARGET_TEMPERATURE = 1.0;
     private double currentTemperature = 10.0;
 
     @Override
@@ -36,7 +37,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
 
         int iterationCount = 0;
         double currentSolutionTime = solution.getTotalSolutionTime();
-        while (currentTemperature > 1.0) {
+        while (currentTemperature > TARGET_TEMPERATURE) {
             boolean swapNodes = iterationCount % 2 == 0;
             for (int i = 0; i < ITERATION_ATTEMPTS; i++) {
                 boolean isValidOperation = false;
@@ -65,7 +66,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
 
                             int timeDelta = veh1TimeChange + veh2TimeChange;
 
-                            if (shouldRejectSolution(timeDelta)) { //warunek odrzucenia rozwiązania
+                            if (shouldRejectSolution(timeDelta)) { //condition for rejecting the solution
                                 vehRoute1.set(nodeIndex1, node1.getId());
                                 vehRoute2.set(nodeIndex2, node2.getId());
                                 continue;
@@ -76,7 +77,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
                             vehicles[vehIndex2].incrementCurrentFreeLoad(node2.getDemand() - node1.getDemand());
                             vehicles[vehIndex1].setRouteTime(vehicles[vehIndex1].getRouteTime() - veh1TimeChange);
                             vehicles[vehIndex2].setRouteTime(vehicles[vehIndex2].getRouteTime() - veh2TimeChange);
-                            deltaSum+=timeDelta;
+                            deltaSum += timeDelta;
                             isValidOperation = true;
                         }
                     }
@@ -109,7 +110,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
 
                             int timeDelta = veh1TimeChange + veh2TimeChange;
 
-                            if (shouldRejectSolution(timeDelta)) { //warunek odrzucenia rozwiązania
+                            if (shouldRejectSolution(timeDelta)) { //condition for rejecting the solution
                                 vehRoute2.remove(addIndex);
                                 vehRoute1.add(nodeIndex1, node1.getId());
                                 continue;
@@ -127,7 +128,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
                 }
             }
             iterationCount++;
-            currentTemperature *= coolingFactor;
+            currentTemperature *= COOLING_FACTOR;
         }
 
         solution.copyRoutesMap(routesMap);
@@ -139,12 +140,6 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
 
     private boolean shouldRejectSolution(int timeDelta) {
         return timeDelta < 0 && Math.random() >= Math.exp(timeDelta / currentTemperature);
-    }
-
-    public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime) {
-        this.distances = distances;
-        this.nodes = nodes;
-        this.startingTime = startingTime;
     }
 
     public int getRandomNumber(int min, int max) {

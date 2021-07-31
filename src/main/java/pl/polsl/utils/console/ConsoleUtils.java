@@ -30,7 +30,7 @@ public class ConsoleUtils {
             }
             System.out.println();
         }
-        System.out.println("Execution time: " + TimeUnit.SECONDS.convert(executionTime, TimeUnit.NANOSECONDS) + " s");
+        System.out.println("Execution time: " + TimeUnit.MILLISECONDS.convert(executionTime, TimeUnit.NANOSECONDS) + " ms");
         System.out.println("Total distance traveled: " + results.getDistanceTraveled());
         System.out.println("Total solution time: " + results.getTotalSolutionTime());
         System.out.println("Total time waiting for time windows: " + results.getTimeSpentWaiting());

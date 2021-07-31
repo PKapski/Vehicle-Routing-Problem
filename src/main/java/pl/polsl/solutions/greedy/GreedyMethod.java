@@ -76,12 +76,12 @@ public class GreedyMethod extends VRPInitialSolutionMethod implements SolutionMe
         return new SolutionResults(routesMap, distanceTraveled, totalSolutionTime, timeSpentWaiting, vehicles, nodes);
     }
 
-    public int getMinimumPossibleNodeId(Distance[] list) {
+    public int getMinimumPossibleNodeId(Distance[] distances) {
         int index = -1;
         double minValue = Double.MAX_VALUE;
-        for (int i = 1; i < list.length; i++) {
-            if (canVisitNode(i) && list[i].getDistance() < minValue) {
-                minValue = list[i].getDistance();
+        for (int i = 1; i < distances.length; i++) {
+            if (canVisitNode(i) && distances[i].getTime() < minValue) {
+                minValue = distances[i].getTime();
                 index = i;
             }
         }

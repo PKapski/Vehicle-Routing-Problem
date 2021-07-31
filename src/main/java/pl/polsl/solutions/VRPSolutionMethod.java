@@ -22,7 +22,7 @@ public class VRPSolutionMethod {
             totalRouteTime += timeBetweenNodes;
             localTime = localTime.plusHours(timeBetweenNodes);
             Node nextNode = nodes.get(route.get(i + 1));
-            if (localTime.isAfter(nextNode.getAvailableTo()) || localTime.isBefore(nextNode.getAvailableFrom())) {
+            if (isNotInTimeWindow(localTime, nextNode)) {
                 double currentWaitingTime = Math.ceil(Duration.between(localTime, nextNode.getAvailableFrom()).toMinutes() / 60.0);
                 totalRouteTime += currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
             }
@@ -30,5 +30,15 @@ public class VRPSolutionMethod {
             localTime = localTime.plusHours(nextNode.getServiceTime());
         }
         return totalRouteTime;
+    }
+
+    public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime) {
+        this.distances = distances;
+        this.nodes = nodes;
+        this.startingTime = startingTime;
+    }
+
+    protected boolean isNotInTimeWindow(LocalTime currentVehicleTime, Node nextNode) {
+        return currentVehicleTime.isAfter(nextNode.getAvailableTo()) || currentVehicleTime.isBefore(nextNode.getAvailableFrom());
     }
 }
