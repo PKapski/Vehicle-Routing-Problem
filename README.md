@@ -1,4 +1,5 @@
 # Vehicle Routing Problem
+
 Java implementation of Vehicle Routing Problem with Time Windows.
 The project includes 3 implementations of popular algorithms:
 * **Tabu search**
@@ -10,7 +11,7 @@ Program can be run in 2 ways: as console application or as JavaFx window applica
 
 Minimal required java version: **12**
 
-#Running the program
+# Running the program
 
 The program is controlled through VM options. Each param has its default values.
 
@@ -44,7 +45,7 @@ Response:
 
 ![Command line result](readmeImages/result.png)
 
-#Running the JavaFx program
+# Running the JavaFx program
 
 Example of running JavFx application:
 
@@ -54,7 +55,8 @@ As a result of this operation, a window with routes (each vehicle with different
 
 ![Visual result](readmeImages/result_fx.png)
 
-#Input file
+# Input file
+
 Input file must be in .csv format with specific headers:
 **_name;x;y;demand;availableFrom;availableTo;serviceTime_**
 
