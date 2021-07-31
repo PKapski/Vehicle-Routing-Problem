@@ -80,8 +80,8 @@ public class GreedyMethod extends VRPInitialSolutionMethod implements SolutionMe
         int index = -1;
         double minValue = Double.MAX_VALUE;
         for (int i = 1; i < distances.length; i++) {
-            if (canVisitNode(i) && distances[i].getTime() < minValue) {
-                minValue = distances[i].getTime();
+            if (canVisitNode(i) && distances[i].getDistance() < minValue) {
+                minValue = distances[i].getDistance();
                 index = i;
             }
         }

@@ -4,7 +4,6 @@ public enum SolutionMethod {
 
     GREEDY,
     TABU,
-    RANDOM,
     SA,
     ANT
 }

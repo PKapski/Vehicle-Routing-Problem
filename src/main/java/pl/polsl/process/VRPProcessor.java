@@ -7,7 +7,6 @@ import pl.polsl.model.SolutionResults;
 import pl.polsl.solutions.SolutionMethodStrategy;
 import pl.polsl.solutions.ant.AntColonyMethod;
 import pl.polsl.solutions.greedy.GreedyMethod;
-import pl.polsl.solutions.random.RandomMethod;
 import pl.polsl.solutions.simulatedannealing.SimulatedAnnealingMethod;
 import pl.polsl.solutions.tabu.TabuMethod;
 import pl.polsl.utils.console.ConsoleUtils;
@@ -52,9 +51,6 @@ public class VRPProcessor {
                 break;
             case SA:
                 strategy = new SimulatedAnnealingMethod();
-                break;
-            case RANDOM:
-                strategy = new RandomMethod();
                 break;
             case ANT:
                 strategy = new AntColonyMethod();
