@@ -17,6 +17,7 @@ import java.util.Map;
 public class GreedyMethod extends VRPInitialSolutionMethod implements SolutionMethodStrategy {
 
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
+        boolean basedOnTime = false;
         int numberOfNodes = nodes.size() - 1;
         double distanceTraveled = 0;
         int totalSolutionTime = 0;
@@ -30,7 +31,8 @@ public class GreedyMethod extends VRPInitialSolutionMethod implements SolutionMe
         Map<Integer, ArrayList<Integer>> routesMap = initVehiclesAndRoutes(numOfVehicles, vehicleCapacity);
         boolean terminate = false;
         while (!terminate) {
-            int nextNodeIndex = getMinimumPossibleNodeId(distances[currentNode]);
+            //if true, will calculate nearest node based on time (including time windows wait), if false will take closest distance
+            int nextNodeIndex = basedOnTime ? getClosestTimeNodeId(distances[currentNode], currentVehicleTime) : getClosestDistanceNodeId(distances[currentNode]);
             Distance currentPathDistance = distances[currentNode][nextNodeIndex];
             distanceTraveled += currentPathDistance.getDistance();
             currentVehicleRouteTime += currentPathDistance.getTime();
@@ -76,7 +78,7 @@ public class GreedyMethod extends VRPInitialSolutionMethod implements SolutionMe
         return new SolutionResults(routesMap, distanceTraveled, totalSolutionTime, timeSpentWaiting, vehicles, nodes);
     }
 
-    public int getMinimumPossibleNodeId(Distance[] distances) {
+    public int getClosestDistanceNodeId(Distance[] distances) {
         int index = -1;
         double minValue = Double.MAX_VALUE;
         for (int i = 1; i < distances.length; i++) {
@@ -86,5 +88,29 @@ public class GreedyMethod extends VRPInitialSolutionMethod implements SolutionMe
             }
         }
         return index == -1 ? 0 : index;
+    }
+
+    public int getClosestTimeNodeId(Distance[] distances, LocalTime currentVehicleTime) {
+        int index = -1;
+        double minValue = Double.MAX_VALUE;
+        for (int i = 1; i < distances.length; i++) {
+            int travelTime = getTravelTimeWithTimeWindows(i, distances[i].getTime(), currentVehicleTime);
+            if (canVisitNode(i) && travelTime < minValue) {
+                minValue = travelTime;
+                index = i;
+            }
+        }
+        return index == -1 ? 0 : index;
+    }
+
+    public int getTravelTimeWithTimeWindows(int nodeId, int travelTime, LocalTime currentVehicleTime) {
+        Node node = nodes.get(nodeId);
+        long timeSpentWaiting = 0;
+        LocalTime vehicleTimeAfterArrival = currentVehicleTime.plusHours(travelTime);
+        if (isNotInTimeWindow(vehicleTimeAfterArrival, node)) {
+            timeSpentWaiting = Duration.between(vehicleTimeAfterArrival, node.getAvailableFrom()).toHours();
+            timeSpentWaiting = timeSpentWaiting > 0 ? timeSpentWaiting : timeSpentWaiting + 24;
+        }
+        return travelTime + Math.toIntExact(timeSpentWaiting);
     }
 }

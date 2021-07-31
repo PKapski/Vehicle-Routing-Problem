@@ -33,8 +33,6 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
             vehicles[i] = new Vehicle(solution.getVehicles()[i]);
         }
 
-        double deltaSum = 0;
-
         int iterationCount = 0;
         double currentSolutionTime = solution.getTotalSolutionTime();
         while (currentTemperature > TARGET_TEMPERATURE) {
@@ -77,7 +75,6 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
                             vehicles[vehIndex2].incrementCurrentFreeLoad(node2.getDemand() - node1.getDemand());
                             vehicles[vehIndex1].setRouteTime(vehicles[vehIndex1].getRouteTime() - veh1TimeChange);
                             vehicles[vehIndex2].setRouteTime(vehicles[vehIndex2].getRouteTime() - veh2TimeChange);
-                            deltaSum += timeDelta;
                             isValidOperation = true;
                         }
                     }
@@ -121,7 +118,6 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
                             vehicles[vehIndex2].decrementCurrentFreeLoad(node1.getDemand());
                             vehicles[vehIndex1].setRouteTime(vehicles[vehIndex1].getRouteTime() - veh1TimeChange);
                             vehicles[vehIndex2].setRouteTime(vehicles[vehIndex2].getRouteTime() - veh2TimeChange);
-                            deltaSum = deltaSum + timeDelta;
                             isValidOperation = true;
                         }
                     }

@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,8 @@ public class SolutionResults {
     private List<Node> nodes;
 
     public void copyRoutesMap(Map<Integer, ArrayList<Integer>> newRoute) {
-        for (int i = 0; i < routesMap.size(); i++) {
+        routesMap = new HashMap<>();
+        for (int i = 0; i < newRoute.size(); i++) {
             routesMap.put(i, new ArrayList<>(newRoute.get(i)));
         }
     }
