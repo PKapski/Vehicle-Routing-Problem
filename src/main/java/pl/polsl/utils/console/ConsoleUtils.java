@@ -1,23 +1,22 @@
 package pl.polsl.utils.console;
 
 import pl.polsl.model.Distance;
+import pl.polsl.model.SolutionMethod;
 import pl.polsl.model.SolutionResults;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ConsoleUtils {
 
-    public void printInitialConditions(Distance[][] inputData, int numberOfNodes, int numberOfVehicles, int vehicleCapacity) {
+    public void printInitialConditions(int numberOfNodes, int numberOfVehicles, int vehicleCapacity, LocalTime startingTime, SolutionMethod method) {
         System.out.print("Input: \n");
-        for (int i = 0; i < numberOfNodes; i++) {
-            for (int j = 0; j < numberOfNodes; j++) {
-                System.out.print(inputData[i][j].getDistance() + "  ");
-            }
-            System.out.println();
-        }
+        System.out.println("Number of nodes: " + numberOfNodes);
         System.out.println("Number of vehicles: " + numberOfVehicles);
         System.out.println("Vehicle capacity: " + vehicleCapacity);
+        System.out.println("Starting time: " + startingTime.toString());
+        System.out.println("Solution method: " + method);
     }
 
     public void printResults(SolutionResults results, long executionTime) {

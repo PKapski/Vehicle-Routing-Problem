@@ -16,6 +16,8 @@ import pl.polsl.utils.files.FilesManager;
 import java.io.FileNotFoundException;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class VRPProcessor {
 
@@ -24,8 +26,8 @@ public class VRPProcessor {
     public static final String START_HOUR_ARG = "startHour";
     public static final String METHOD_ARG = "method";
     public static final String INPUT_FILE_ARG = "inputFile";
-    public static final int PROBABILISTIC_METHODS_RUN_COUNT = 10;
-    public static final List<SolutionMethod> PROBABILISTIC_METHODS = List.of(SolutionMethod.SA, SolutionMethod.ANT);
+    public static final String RUN_COUNT_ARG = "runCount";
+    public static final List<SolutionMethod> PROBABILISTIC_METHODS = Stream.of(SolutionMethod.SA, SolutionMethod.ANT) .collect(Collectors.toList());
 
     public static SolutionResults runVRP() throws FileNotFoundException {
         FilesManager filesManager = new FilesManager();
@@ -36,12 +38,14 @@ public class VRPProcessor {
         Distance[][] distances = dataUtils.calculateNodeDistances(nodes);
         int numberOfNodes = distances.length;
         int numberOfVehicles = Integer.parseInt(System.getProperty(NUMBER_OF_VEHICLES_ARG, "4"));
-        int vehicleCapacity = Integer.parseInt(System.getProperty(VEHICLE_CAPACITY_ARG, "15"));
+        int vehicleCapacity = Integer.parseInt(System.getProperty(VEHICLE_CAPACITY_ARG, "50"));
         LocalTime startingTime = LocalTime.of(Integer.parseInt(System.getProperty(START_HOUR_ARG, "4")), 0);
-        consoleUtils.printInitialConditions(distances, numberOfNodes, numberOfVehicles, vehicleCapacity);
+        int runCount = Integer.parseInt(System.getProperty(RUN_COUNT_ARG, "10"));
 
         SolutionMethodStrategy strategy;
         SolutionMethod method = SolutionMethod.valueOf(System.getProperty(METHOD_ARG, SolutionMethod.TABU.name()).toUpperCase());
+        consoleUtils.printInitialConditions(numberOfNodes, numberOfVehicles, vehicleCapacity, startingTime, method);
+
         switch (method) {
             case GREEDY:
                 strategy = new GreedyMethod();
@@ -63,7 +67,7 @@ public class VRPProcessor {
         long startTime = 0;
         long stopTime = 0;
         if (PROBABILISTIC_METHODS.contains(method)) {
-            for (int i = 0; i < PROBABILISTIC_METHODS_RUN_COUNT; i++) {
+            for (int i = 0; i < runCount; i++) {
                 long currentStartTime = System.nanoTime();
                 SolutionResults currentResults = strategy.getSolution(nodes, distances, numberOfVehicles, vehicleCapacity, startingTime);
                 nodes.forEach(x -> x.setVisited(false));

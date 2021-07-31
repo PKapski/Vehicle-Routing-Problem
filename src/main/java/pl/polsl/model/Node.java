@@ -11,7 +11,6 @@ import java.time.LocalTime;
 @ToString
 public class Node {
 
-    @CsvBindByName(column = "id")
     private int id;
 
     @CsvBindByName(column = "name")

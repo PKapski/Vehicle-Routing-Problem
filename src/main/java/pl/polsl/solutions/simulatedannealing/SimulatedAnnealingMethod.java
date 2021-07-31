@@ -17,9 +17,8 @@ import java.util.Random;
 public class SimulatedAnnealingMethod extends VRPSolutionMethod implements SolutionMethodStrategy {
 
     private static final int ITERATION_ATTEMPTS = 50;
-    private static final double COOLING_FACTOR = 0.98; //range: <0.8,0.99>
+    private static final double COOLING_FACTOR = 0.99; //range: <0.8,0.99>
     private static final double TARGET_TEMPERATURE = 1.0;
-    private double currentTemperature = 10.0;
 
     @Override
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
@@ -32,6 +31,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
         for (int i = 0; i < vehicles.length; i++) {
             vehicles[i] = new Vehicle(solution.getVehicles()[i]);
         }
+        double currentTemperature = 10.0;
 
         int iterationCount = 0;
         double currentSolutionTime = solution.getTotalSolutionTime();
@@ -64,7 +64,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
 
                             int timeDelta = veh1TimeChange + veh2TimeChange;
 
-                            if (shouldRejectSolution(timeDelta)) { //condition for rejecting the solution
+                            if (shouldRejectSolution(timeDelta, currentTemperature)) { //condition for rejecting the solution
                                 vehRoute1.set(nodeIndex1, node1.getId());
                                 vehRoute2.set(nodeIndex2, node2.getId());
                                 continue;
@@ -107,7 +107,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
 
                             int timeDelta = veh1TimeChange + veh2TimeChange;
 
-                            if (shouldRejectSolution(timeDelta)) { //condition for rejecting the solution
+                            if (shouldRejectSolution(timeDelta, currentTemperature)) { //condition for rejecting the solution
                                 vehRoute2.remove(addIndex);
                                 vehRoute1.add(nodeIndex1, node1.getId());
                                 continue;
@@ -134,7 +134,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod implements Solut
         return solution;
     }
 
-    private boolean shouldRejectSolution(int timeDelta) {
+    private boolean shouldRejectSolution(int timeDelta, double currentTemperature) {
         return timeDelta < 0 && Math.random() >= Math.exp(timeDelta / currentTemperature);
     }
 

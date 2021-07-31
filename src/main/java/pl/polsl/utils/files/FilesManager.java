@@ -12,6 +12,10 @@ public class FilesManager {
     @SuppressWarnings("unchecked")
     public List<Node> loadNodesFromCSV(String fileName) throws FileNotFoundException {
         FileReader inputFile = new FileReader(fileName);
-        return new CsvToBeanBuilder(inputFile).withSeparator(';').withType(Node.class).build().parse();
+        List<Node> nodes = new CsvToBeanBuilder(inputFile).withSeparator(';').withType(Node.class).build().parse();
+        for (int i=0; i<nodes.size(); i++) {
+            nodes.get(i).setId(i);
+        }
+        return nodes;
     }
 }
