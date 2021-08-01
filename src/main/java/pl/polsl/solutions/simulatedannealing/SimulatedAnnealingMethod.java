@@ -4,7 +4,6 @@ import pl.polsl.model.Distance;
 import pl.polsl.model.Node;
 import pl.polsl.model.SolutionResults;
 import pl.polsl.model.Vehicle;
-import pl.polsl.solutions.SolutionMethodStrategy;
 import pl.polsl.solutions.VRPSolutionMethod;
 import pl.polsl.solutions.greedy.GreedyMethod;
 
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class SimulatedAnnealingMethod extends VRPSolutionMethod implements SolutionMethodStrategy {
+public class SimulatedAnnealingMethod extends VRPSolutionMethod {
 
     private static final int ITERATION_ATTEMPTS = 50;
     private static final double COOLING_FACTOR = 0.99; //range: <0.8,0.99>

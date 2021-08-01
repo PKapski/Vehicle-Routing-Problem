@@ -4,7 +4,6 @@ import pl.polsl.model.Distance;
 import pl.polsl.model.Node;
 import pl.polsl.model.SolutionResults;
 import pl.polsl.model.Vehicle;
-import pl.polsl.solutions.SolutionMethodStrategy;
 import pl.polsl.solutions.VRPSolutionMethod;
 import pl.polsl.solutions.greedy.GreedyMethod;
 
@@ -13,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class TabuMethod extends VRPSolutionMethod implements SolutionMethodStrategy {
+public class TabuMethod extends VRPSolutionMethod {
 
     private static final int MAX_ITERATIONS = 1000;
     private static final int TABU_INCREMENT = 5;

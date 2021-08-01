@@ -19,7 +19,7 @@ The program is controlled through VM options. Each param has its default values.
 Algorithms try to use as little vehicles as possible.
 * **vehicleCapacity** _(default 50)_ - initial capacity of each vehicle.
 * **method** _(default TABU)_ - method used to solve problem.
-Available options: **_TABU, SA, ANT_**
+Available options: **_GREEDY, TABU, SA, ANT_**
 * **startHour** _(default 4)_ - integer number that defines stating hour of each vehicle.
 It is used for time windows.
 * **inputFile** _(default 'src/main/resources/initialData/inputCSVData3.csv')_ - data input file.
@@ -38,7 +38,7 @@ and next
 for example:
 
 `mvn exec:java -Dexec.mainClass=VRP_Main -DnumberOfVehicles=4 -DvehicleCapacity=50 -Dmethod=tabu -DstartHour=4
--DinputFile="D:\Program Files\VRP\src\main\resources\initialData\inputCSVData3.csv`
+-DinputFile="D:\Program Files\VRP\src\main\resources\initialData\inputCSVData3.csv"`
 
 Response:
 

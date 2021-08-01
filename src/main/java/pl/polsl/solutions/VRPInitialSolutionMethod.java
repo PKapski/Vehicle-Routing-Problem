@@ -1,6 +1,8 @@
 package pl.polsl.solutions;
 
+import pl.polsl.model.Distance;
 import pl.polsl.model.Node;
+import pl.polsl.model.SolutionResults;
 import pl.polsl.model.Vehicle;
 
 import java.time.LocalTime;
@@ -9,11 +11,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class VRPInitialSolutionMethod {
+public class VRPInitialSolutionMethod implements SolutionMethodStrategy {
 
     protected List<Node> nodes;
     protected Vehicle[] vehicles;
     protected int currVehicleId;
+
+    @Override
+    public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
+        return null;
+    }
 
     protected Map<Integer, ArrayList<Integer>> initVehiclesAndRoutes(int numOfVehicles, int vehicleCapacity) {
         Map<Integer, ArrayList<Integer>> routesMap = new HashMap<>();

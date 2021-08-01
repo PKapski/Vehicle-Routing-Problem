@@ -5,7 +5,6 @@ import pl.polsl.model.Node;
 import pl.polsl.model.SolutionResults;
 import pl.polsl.model.Vehicle;
 import pl.polsl.solutions.InvalidAssumptionsError;
-import pl.polsl.solutions.SolutionMethodStrategy;
 import pl.polsl.solutions.VRPInitialSolutionMethod;
 
 import java.time.Duration;
@@ -14,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GreedyMethod extends VRPInitialSolutionMethod implements SolutionMethodStrategy {
+public class GreedyMethod extends VRPInitialSolutionMethod {
 
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
         boolean basedOnTime = false;

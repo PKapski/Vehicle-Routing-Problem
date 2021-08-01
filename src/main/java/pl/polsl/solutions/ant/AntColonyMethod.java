@@ -16,7 +16,7 @@ import java.util.Map;
 
 import static java.lang.Math.pow;
 
-public class AntColonyMethod extends VRPSolutionMethod implements SolutionMethodStrategy {
+public class AntColonyMethod extends VRPSolutionMethod {
 
     private static final int MAX_ITERATIONS = 1000;
     private static final int NUMBER_OF_ANTS = 50;

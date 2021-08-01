@@ -2,17 +2,23 @@ package pl.polsl.solutions;
 
 import pl.polsl.model.Distance;
 import pl.polsl.model.Node;
+import pl.polsl.model.SolutionResults;
 
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VRPSolutionMethod {
+public class VRPSolutionMethod implements SolutionMethodStrategy {
 
     protected Distance[][] distances;
     protected List<Node> nodes;
     protected LocalTime startingTime;
+
+    @Override
+    public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
+        return null;
+    }
 
     protected int calculateRouteTime(ArrayList<Integer> route) {
         int totalRouteTime = 0;
