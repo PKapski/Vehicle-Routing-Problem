@@ -53,10 +53,11 @@ Example of running JavFx application:
 
 As a result of this operation, a window with routes (each vehicle with different color) will be presented as shown below:
 
-![Visual result](readmeImages/result_fx.png)
+![JavaFX result](readmeImages/result_fx.png)
 
 # Input file
 
 Input file must be in .csv format with specific headers:
+
 **_name;x;y;demand;availableFrom;availableTo;serviceTime_**
 

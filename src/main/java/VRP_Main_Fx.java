@@ -5,6 +5,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import pl.polsl.model.Node;
 import pl.polsl.model.SolutionResults;
@@ -37,18 +38,26 @@ public class VRP_Main_Fx extends Application {
             if (route.size() == 1) {
                 continue;
             }
-            Color color = colors[vehicleIndex];
+            Color color;
+            if (vehicleIndex < colors.length) {
+                color = colors[vehicleIndex];
+            } else {
+                color = Color.color(Math.random(), Math.random(), Math.random());
+            }
             for (int i = 0; i < route.size() - 1; i++) {
+                Node node = nodesMap.get(route.get(i + 1));
                 if (route.get(i + 1) != 0) {
-                    circle = createCircle(nodesMap.get(route.get(i + 1)), Color.BLACK);
+                    circle = createCircle(node, Color.BLACK);
+                    Text text = new Text(node.getX() - 7, node.getY() - 7, node.getName());
                     root.getChildren().add(circle);
+                    root.getChildren().add(text);
                 }
                 Line line = new Line();
                 line.setStroke(color);
                 line.setStartX(nodesMap.get(route.get(i)).getX());
                 line.setStartY(nodesMap.get(route.get(i)).getY());
-                line.setEndX(nodesMap.get(route.get(i + 1)).getX());
-                line.setEndY(nodesMap.get(route.get(i + 1)).getY());
+                line.setEndX(node.getX());
+                line.setEndY(node.getY());
                 root.getChildren().add(line);
             }
             vehicleIndex++;
@@ -56,6 +65,7 @@ public class VRP_Main_Fx extends Application {
 
         Scene scene = new Scene(root, 800, 800);
         stage.setScene(scene);
+        stage.setTitle("VRPTW solution");
         stage.show();
     }
 
