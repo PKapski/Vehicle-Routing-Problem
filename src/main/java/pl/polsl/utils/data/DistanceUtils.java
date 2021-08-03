@@ -5,7 +5,7 @@ import pl.polsl.model.Node;
 
 import java.util.List;
 
-public class DataUtils {
+public class DistanceUtils {
 
     public Distance[][] calculateNodeDistances(List<Node> nodes) {
         int numOfNodes = nodes.size();

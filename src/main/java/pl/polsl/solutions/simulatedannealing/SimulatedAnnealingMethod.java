@@ -18,6 +18,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod {
     private static final int ITERATION_ATTEMPTS = 50;
     private static final double COOLING_FACTOR = 0.99; //range: <0.8,0.99>
     private static final double TARGET_TEMPERATURE = 1.0;
+    private static final double STARTING_TEMPERATURE = 10.0;
 
     @Override
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
@@ -30,7 +31,7 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod {
         for (int i = 0; i < vehicles.length; i++) {
             vehicles[i] = new Vehicle(solution.getVehicles()[i]);
         }
-        double currentTemperature = 10.0;
+        double currentTemperature = STARTING_TEMPERATURE;
 
         int iterationCount = 0;
         double currentSolutionTime = solution.getTotalSolutionTime();

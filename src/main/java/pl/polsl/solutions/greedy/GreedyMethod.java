@@ -15,8 +15,9 @@ import java.util.Map;
 
 public class GreedyMethod extends VRPInitialSolutionMethod {
 
+    public static final boolean nodeChoiceBasedOnTime = false;
+
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
-        boolean basedOnTime = false;
         int numberOfNodes = nodes.size() - 1;
         double distanceTraveled = 0;
         int totalSolutionTime = 0;
@@ -31,7 +32,7 @@ public class GreedyMethod extends VRPInitialSolutionMethod {
         boolean terminate = false;
         while (!terminate) {
             //if true, will calculate nearest node based on time (including time windows wait), if false will take closest distance
-            int nextNodeIndex = basedOnTime ? getClosestTimeNodeId(distances[currentNode], currentVehicleTime) : getClosestDistanceNodeId(distances[currentNode]);
+            int nextNodeIndex = nodeChoiceBasedOnTime ? getClosestTimeNodeId(distances[currentNode], currentVehicleTime) : getClosestDistanceNodeId(distances[currentNode]);
             Distance currentPathDistance = distances[currentNode][nextNodeIndex];
             distanceTraveled += currentPathDistance.getDistance();
             currentVehicleRouteTime += currentPathDistance.getTime();
@@ -78,7 +79,7 @@ public class GreedyMethod extends VRPInitialSolutionMethod {
     }
 
     public int getClosestDistanceNodeId(Distance[] distances) {
-        int index = -1;
+        int index = 0;
         double minValue = Double.MAX_VALUE;
         for (int i = 1; i < distances.length; i++) {
             if (canVisitNode(i) && distances[i].getDistance() < minValue) {
@@ -86,11 +87,11 @@ public class GreedyMethod extends VRPInitialSolutionMethod {
                 index = i;
             }
         }
-        return index == -1 ? 0 : index;
+        return index;
     }
 
     public int getClosestTimeNodeId(Distance[] distances, LocalTime currentVehicleTime) {
-        int index = -1;
+        int index = 0;
         double minValue = Double.MAX_VALUE;
         for (int i = 1; i < distances.length; i++) {
             int travelTime = getTravelTimeWithTimeWindows(i, distances[i].getTime(), currentVehicleTime);
@@ -99,7 +100,7 @@ public class GreedyMethod extends VRPInitialSolutionMethod {
                 index = i;
             }
         }
-        return index == -1 ? 0 : index;
+        return index;
     }
 
     public int getTravelTimeWithTimeWindows(int nodeId, int travelTime, LocalTime currentVehicleTime) {

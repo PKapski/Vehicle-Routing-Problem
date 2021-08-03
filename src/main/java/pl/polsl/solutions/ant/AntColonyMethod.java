@@ -25,7 +25,7 @@ public class AntColonyMethod extends VRPSolutionMethod {
     private static final int DISTANCE_IMPORTANCE = 4;
     private static final double PHEROMONE_EVAPORATION = 0.8;
     private double[][] pheromones;
-    double[][] currentIterationPheromones;
+    private double[][] currentIterationPheromones;
 
     @Override
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
@@ -149,11 +149,11 @@ public class AntColonyMethod extends VRPSolutionMethod {
         return totalSolutionTime;
     }
 
-    public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime, int numberOfAnts, double totalSolutionTime) {
+    public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime, int numberOfAnts, double initialSolutionTime) {
         super.initializeVariables(nodes, distances, startingTime);
         nodes.forEach(x -> x.setVisited(false));
         int nodesCount = nodes.size();
-        double initialPheromoneValue = numberOfAnts / totalSolutionTime;
+        double initialPheromoneValue = numberOfAnts / initialSolutionTime;
         pheromones = new double[nodesCount][nodesCount];
         for (int i = 0; i < nodesCount; i++) {
             for (int j = 0; j < nodesCount; j++) {

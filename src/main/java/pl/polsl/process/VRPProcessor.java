@@ -10,7 +10,7 @@ import pl.polsl.solutions.greedy.GreedyMethod;
 import pl.polsl.solutions.simulatedannealing.SimulatedAnnealingMethod;
 import pl.polsl.solutions.tabu.TabuMethod;
 import pl.polsl.utils.console.ConsoleUtils;
-import pl.polsl.utils.data.DataUtils;
+import pl.polsl.utils.data.DistanceUtils;
 import pl.polsl.utils.files.FilesManager;
 
 import java.io.FileNotFoundException;
@@ -32,10 +32,10 @@ public class VRPProcessor {
     public static SolutionResults runVRP() throws FileNotFoundException {
         FilesManager filesManager = new FilesManager();
         ConsoleUtils consoleUtils = new ConsoleUtils();
-        DataUtils dataUtils = new DataUtils();
+        DistanceUtils distanceUtils = new DistanceUtils();
         String fileName = System.getProperty(INPUT_FILE_ARG, "src/main/resources/initialData/inputCSVData3.csv");
         List<Node> nodes = filesManager.loadNodesFromCSV(fileName);
-        Distance[][] distances = dataUtils.calculateNodeDistances(nodes);
+        Distance[][] distances = distanceUtils.calculateNodeDistances(nodes);
         int numberOfNodes = distances.length;
         int numberOfVehicles = Integer.parseInt(System.getProperty(NUMBER_OF_VEHICLES_ARG, "4"));
         int vehicleCapacity = Integer.parseInt(System.getProperty(VEHICLE_CAPACITY_ARG, "50"));
