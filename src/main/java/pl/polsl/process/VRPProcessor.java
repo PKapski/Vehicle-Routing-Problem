@@ -10,7 +10,7 @@ import pl.polsl.solutions.greedy.GreedyMethod;
 import pl.polsl.solutions.simulatedannealing.SimulatedAnnealingMethod;
 import pl.polsl.solutions.tabu.TabuMethod;
 import pl.polsl.utils.console.ConsoleUtils;
-import pl.polsl.utils.data.DistanceUtils;
+import pl.polsl.utils.data.DataUtils;
 import pl.polsl.utils.files.FilesManager;
 
 import java.io.FileNotFoundException;
@@ -32,16 +32,17 @@ public class VRPProcessor {
     public static SolutionResults runVRP() throws FileNotFoundException {
         FilesManager filesManager = new FilesManager();
         ConsoleUtils consoleUtils = new ConsoleUtils();
-        DistanceUtils distanceUtils = new DistanceUtils();
-        String fileName = System.getProperty(INPUT_FILE_ARG, "src/main/resources/initialData/inputCSVData3.csv");
+        DataUtils dataUtils = new DataUtils();
+        String fileName = System.getProperty(INPUT_FILE_ARG, "src/main/resources/initialData/inputCSVData60.csv");
         List<Node> nodes = filesManager.loadNodesFromCSV(fileName);
-        Distance[][] distances = distanceUtils.calculateNodeDistances(nodes);
+        Distance[][] distances = dataUtils.calculateNodeDistances(nodes);
         int numberOfNodes = distances.length;
         int numberOfVehicles = Integer.parseInt(System.getProperty(NUMBER_OF_VEHICLES_ARG, "4"));
         int vehicleCapacity = Integer.parseInt(System.getProperty(VEHICLE_CAPACITY_ARG, "50"));
         LocalTime startingTime = LocalTime.of(Integer.parseInt(System.getProperty(START_HOUR_ARG, "4")), 0);
         int runCount = Integer.parseInt(System.getProperty(RUN_COUNT_ARG, "10"));
 
+        dataUtils.validateNodes(nodes, numberOfVehicles, vehicleCapacity);
         SolutionMethodStrategy strategy;
         SolutionMethod method = SolutionMethod.valueOf(System.getProperty(METHOD_ARG, SolutionMethod.TABU.name()).toUpperCase());
         consoleUtils.printInitialConditions(numberOfNodes, numberOfVehicles, vehicleCapacity, startingTime, method);

@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class GreedyMethod extends VRPInitialSolutionMethod {
 
-    public static final boolean nodeChoiceBasedOnTime = false;
+    public static final boolean nodeChoiceBasedOnTime = true;
 
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
         int numberOfNodes = nodes.size() - 1;

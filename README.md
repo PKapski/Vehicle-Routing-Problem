@@ -22,7 +22,7 @@ Algorithms try to use as little vehicles as possible.
 Available options: **_GREEDY, TABU, SA, ANT_**
 * **startHour** _(default 4)_ - integer number that defines stating hour of each vehicle.
 It is used for time windows.
-* **inputFile** _(default 'src/main/resources/initialData/inputCSVData3.csv')_ - data input file.
+* **inputFile** _(default 'src/main/resources/initialData/inputCSVData40.csv')_ - data input file.
 * **runCount** _(default 10)_ - used for probabilistic algorithms (currently Simulated Annealing and ACO),
 the program is run this many times and the best result is returned.
 

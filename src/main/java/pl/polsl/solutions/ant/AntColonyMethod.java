@@ -3,7 +3,6 @@ package pl.polsl.solutions.ant;
 import pl.polsl.model.Distance;
 import pl.polsl.model.Node;
 import pl.polsl.model.SolutionResults;
-import pl.polsl.solutions.SolutionMethodStrategy;
 import pl.polsl.solutions.VRPSolutionMethod;
 import pl.polsl.solutions.greedy.GreedyMethod;
 
@@ -19,11 +18,11 @@ import static java.lang.Math.pow;
 public class AntColonyMethod extends VRPSolutionMethod {
 
     private static final int MAX_ITERATIONS = 1000;
-    private static final int NUMBER_OF_ANTS = 50;
-    private static final int PHEROMONE_IMPORTANCE = 1;
-    private static final int PHEROMONE_CONSTANT = 1;
-    private static final int DISTANCE_IMPORTANCE = 4;
-    private static final double PHEROMONE_EVAPORATION = 0.8;
+    private static final int NUMBER_OF_ANTS = 15;
+    private static final int PHEROMONE_IMPORTANCE = 4;
+    private static final int PHEROMONE_CONSTANT = 2;
+    private static final int DISTANCE_IMPORTANCE = 2;
+    private static final double PHEROMONE_EVAPORATION = 0.5;
     private double[][] pheromones;
     private double[][] currentIterationPheromones;
 
@@ -38,19 +37,22 @@ public class AntColonyMethod extends VRPSolutionMethod {
         while (iterationCount != MAX_ITERATIONS) {
             clearCurrentIterationPheromones();
             for (int i = 0; i < NUMBER_OF_ANTS; i++) {
-                Ant ant = new Ant(vehiclesCount, vehicleCapacity);
+                Ant ant = new Ant(vehiclesCount, vehicleCapacity, startingTime);
                 for (int j = 0; j < vehiclesCount; j++) {
                     int currentNodeId = 0;
                     do {
-                        currentNodeId = getNextNodeId(distances[currentNodeId], ant.getCurrentFreeLoad(), currentNodeId);
-                        ant.addNodeToCurrentRoute(nodes.get(currentNodeId));
+                        int nextNodeId = getNextNodeId(distances[currentNodeId], ant.getCurrentFreeLoad(), currentNodeId, ant.getCurrentVehicleTime());
+                        ant.addNodeToCurrentRoute(nodes.get(nextNodeId), getTravelTimeWithTimeWindows(nextNodeId, distances[currentNodeId][nextNodeId].getTime(), ant.getCurrentVehicleTime()));
+                        currentNodeId = nextNodeId;
                         nodes.get(currentNodeId).setVisited(true);
                     } while (currentNodeId != 0);
                     ant.setNextVehicle();
                 }
 
                 double antSolutionTime = calculateSolutionTime(ant.getRoutesMap());
+
                 if (antSolutionTime < solution.getTotalSolutionTime()) {
+                    System.out.println(antSolutionTime);
                     solution.copyRoutesMap(ant.getRoutesMap());
                     solution.setTotalSolutionTime(antSolutionTime);
                 }
@@ -61,6 +63,7 @@ public class AntColonyMethod extends VRPSolutionMethod {
             updatePheromones();
             iterationCount++;
         }
+
         solution.calculateFinalSolutionValues(nodes, distances, startingTime);
         return solution;
     }
@@ -85,7 +88,6 @@ public class AntColonyMethod extends VRPSolutionMethod {
             for (int i = 0; i < list.size() - 1; i++) {
                 currentIterationPheromones[list.get(i)][list.get(i + 1)] += pheromoneValue;
                 currentIterationPheromones[list.get(i + 1)][list.get(i)] += pheromoneValue;
-
             }
         }
     }
@@ -94,12 +96,12 @@ public class AntColonyMethod extends VRPSolutionMethod {
         nodes.forEach(x -> x.setVisited(false));
     }
 
-    public int getNextNodeId(Distance[] distances, double currentFreeLoad, int currentNodeId) {
+    public int getNextNodeId(Distance[] distances, double currentFreeLoad, int currentNodeId, LocalTime currentVehicleTime) {
         double[] moveProbabilities = new double[distances.length];
         double probabilitiesSum = 0;
         for (int i = 0; i < distances.length; i++) {
             if (canVisitNode(i, currentFreeLoad)) {
-                double probabilityNominator = pow(pheromones[currentNodeId][i], PHEROMONE_IMPORTANCE) * pow(1.0 / distances[i].getTime(), DISTANCE_IMPORTANCE);
+                double probabilityNominator = pow(pheromones[currentNodeId][i], PHEROMONE_IMPORTANCE) * pow(1.0 / getTravelTimeWithTimeWindows(i, distances[i].getTime(), currentVehicleTime), DISTANCE_IMPORTANCE);
                 probabilitiesSum += probabilityNominator;
                 moveProbabilities[i] = probabilityNominator;
             } else {
@@ -116,35 +118,33 @@ public class AntColonyMethod extends VRPSolutionMethod {
         }
 
         int nextNodeId = 0;
-        for (double rand = Math.random(); nextNodeId < moveProbabilities.length; nextNodeId++) {
+        for (double rand = Math.random(); nextNodeId < moveProbabilities.length - 1; nextNodeId++) {
             rand -= moveProbabilities[nextNodeId];
             if (rand <= 0.0) break;
         }
+
         return nextNodeId;
     }
 
+    public int getTravelTimeWithTimeWindows(int nodeId, int travelTime, LocalTime currentVehicleTime) {
+        Node node = nodes.get(nodeId);
+        long timeSpentWaiting = 0;
+        LocalTime vehicleTimeAfterArrival = currentVehicleTime.plusHours(travelTime);
+        if (isNotInTimeWindow(vehicleTimeAfterArrival, node)) {
+            timeSpentWaiting = Duration.between(vehicleTimeAfterArrival, node.getAvailableFrom()).toHours();
+            timeSpentWaiting = timeSpentWaiting > 0 ? timeSpentWaiting : timeSpentWaiting + 24;
+        }
+        return travelTime + Math.toIntExact(timeSpentWaiting);
+    }
+
     protected boolean canVisitNode(int i, double currentFreeLoad) {
-        return !nodes.get(i).isVisited() && currentFreeLoad >= nodes.get(i).getDemand() && i!=0;
+        return !nodes.get(i).isVisited() && currentFreeLoad >= nodes.get(i).getDemand() && i != 0;
     }
 
     private double calculateSolutionTime(Map<Integer, ArrayList<Integer>> routesMap) {
         double totalSolutionTime = 0;
         for (int i = 0; i < routesMap.size(); i++) {
-            LocalTime localTime = startingTime;
-            ArrayList<Integer> route = routesMap.get(i);
-            for (int j = 0; j < route.size() - 1; j++) {
-                Distance distance = distances[route.get(j)][route.get(j + 1)];
-                totalSolutionTime += distance.getTime();
-                localTime = localTime.plusHours(distance.getTime());
-                Node nextNode = nodes.get(route.get(j + 1));
-                if (localTime.isAfter(nextNode.getAvailableTo()) || localTime.isBefore(nextNode.getAvailableFrom())) {
-                    long currentWaitingTime = Duration.between(localTime, nextNode.getAvailableFrom()).toHours();
-                    currentWaitingTime = currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
-                    totalSolutionTime += currentWaitingTime;
-                }
-                totalSolutionTime += nextNode.getServiceTime();
-                localTime = localTime.plusHours(nextNode.getServiceTime());
-            }
+            totalSolutionTime += calculateRouteTime(routesMap.get(i));
         }
         return totalSolutionTime;
     }

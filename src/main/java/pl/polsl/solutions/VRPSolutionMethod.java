@@ -29,7 +29,7 @@ public class VRPSolutionMethod implements SolutionMethodStrategy {
             localTime = localTime.plusHours(timeBetweenNodes);
             Node nextNode = nodes.get(route.get(i + 1));
             if (isNotInTimeWindow(localTime, nextNode)) {
-                double currentWaitingTime = Math.ceil(Duration.between(localTime, nextNode.getAvailableFrom()).toMinutes() / 60.0);
+                long currentWaitingTime = Duration.between(localTime, nextNode.getAvailableFrom()).toHours();
                 totalRouteTime += currentWaitingTime > 0 ? currentWaitingTime : currentWaitingTime + 24;
             }
             totalRouteTime += nextNode.getServiceTime();

@@ -17,10 +17,10 @@ public class Node {
     private String name;
 
     @CsvBindByName(column = "x")
-    private int x;
+    private Integer x;
 
     @CsvBindByName(column = "y")
-    private int y;
+    private Integer y;
 
     @CsvBindByName(column = "demand")
     private double demand;
