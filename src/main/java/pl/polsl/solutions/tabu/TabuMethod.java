@@ -15,9 +15,12 @@ import java.util.Map;
 public class TabuMethod extends VRPSolutionMethod {
 
     private static final int MAX_ITERATIONS = 1000;
-    private static final int TABU_INCREMENT = 5;
+    private static final int TABU_INCREMENT = 15;
     private int[][] swapTabuMatrix;
     private int[][] putTabuMatrix;
+
+    private int[][] swapFrequencyMatrix;
+    private int[][] putFrequencyMatrix;
 
     @Override
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
@@ -42,6 +45,7 @@ public class TabuMethod extends VRPSolutionMethod {
             iterationCount++;
             boolean swapNodes = iterationCount % 2 == 0;
             double bestIterationTimeDelta = Double.MAX_VALUE;
+            double bestIterationTimeDeltaWithFreq = Double.MAX_VALUE;
             for (int vehIndex1 = 0; vehIndex1 < vehiclesCount; vehIndex1++) {
                 ArrayList<Integer> vehRoute1 = routesMap.get(vehIndex1);
                 for (int routeNodeIndex1 = 1; routeNodeIndex1 < routesMap.get(vehIndex1).size() - 2; routeNodeIndex1++) {
@@ -75,7 +79,18 @@ public class TabuMethod extends VRPSolutionMethod {
                                         continue;
                                     }
 
-                                    if (timeDelta < bestIterationTimeDelta) {
+                                    int timeDeltaWithFreq = timeDelta;
+                                    int frequencyValue = swapFrequencyMatrix[Math.min(swapValue1, swapValue2)][Math.max(swapValue1, swapValue2)];
+                                    if (frequencyValue > 0) {
+                                        if (timeDelta < 0) {
+                                            timeDeltaWithFreq /= frequencyValue;
+                                        } else {
+                                            timeDeltaWithFreq *= frequencyValue;
+
+                                        }
+                                    }
+                                    if (timeDeltaWithFreq < bestIterationTimeDeltaWithFreq) {
+                                        bestIterationTimeDeltaWithFreq = timeDeltaWithFreq;
                                         bestIterationTimeDelta = timeDelta;
                                         moveFromVehicle = vehIndex1;
                                         moveToVehicle = vehIndex2;
@@ -111,7 +126,18 @@ public class TabuMethod extends VRPSolutionMethod {
                                         continue;
                                     }
 
-                                    if (timeDelta < bestIterationTimeDelta) {
+                                    int timeDeltaWithFreq = timeDelta;
+                                    if (putFrequencyMatrix[removedNode][vehIndex2] > 0) {
+                                        if (timeDelta < 0) {
+                                            timeDeltaWithFreq /= putFrequencyMatrix[removedNode][vehIndex2];
+                                        } else {
+                                            timeDeltaWithFreq *= putFrequencyMatrix[removedNode][vehIndex2];
+
+                                        }
+                                    }
+
+                                    if (timeDeltaWithFreq < bestIterationTimeDeltaWithFreq) {
+                                        bestIterationTimeDeltaWithFreq = timeDeltaWithFreq;
                                         bestIterationTimeDelta = timeDelta;
                                         moveFromVehicle = vehIndex1;
                                         moveToVehicle = vehIndex2;
@@ -137,6 +163,7 @@ public class TabuMethod extends VRPSolutionMethod {
                 routesMap.get(moveToVehicle).set(moveIndexTo, swapValue1);
 
                 swapTabuMatrix[Math.min(swapValue1, swapValue2)][Math.max(swapValue1, swapValue2)] += TABU_INCREMENT;
+                swapFrequencyMatrix[Math.min(swapValue1, swapValue2)][Math.max(swapValue1, swapValue2)] += 1;
                 vehicles[moveFromVehicle].incrementCurrentFreeLoad(nodes.get(swapValue1).getDemand() - nodes.get(swapValue2).getDemand());
                 vehicles[moveToVehicle].incrementCurrentFreeLoad(nodes.get(swapValue2).getDemand() - nodes.get(swapValue1).getDemand());
 
@@ -144,6 +171,7 @@ public class TabuMethod extends VRPSolutionMethod {
                 int movedNode = routesMap.get(moveFromVehicle).remove(moveIndexFrom);
                 routesMap.get(moveToVehicle).add(moveIndexTo, movedNode);
                 putTabuMatrix[movedNode][moveToVehicle] += TABU_INCREMENT;
+                putFrequencyMatrix[movedNode][moveToVehicle] += 1;
                 vehicles[moveFromVehicle].incrementCurrentFreeLoad(nodes.get(movedNode).getDemand());
                 vehicles[moveToVehicle].decrementCurrentFreeLoad(nodes.get(movedNode).getDemand());
             }
@@ -157,6 +185,7 @@ public class TabuMethod extends VRPSolutionMethod {
                 solution.copyVehicles(vehicles);
             }
         }
+
         solution.calculateFinalSolutionValues(nodes, distances, startingTime);
         return solution;
     }
@@ -166,11 +195,8 @@ public class TabuMethod extends VRPSolutionMethod {
         int nodesCount = nodes.size();
         this.swapTabuMatrix = new int[nodesCount][nodesCount];
         this.putTabuMatrix = new int[nodesCount][usedVehicles];
-        for (int i = 0; i < nodesCount; i++) {
-            for (int j = 0; j < usedVehicles; j++) {
-                putTabuMatrix[i][j] = 0;
-            }
-        }
+        this.swapFrequencyMatrix = new int[nodesCount][nodesCount];
+        this.putFrequencyMatrix = new int[nodesCount][usedVehicles];
     }
 
     public void decrementTabuMatrix(boolean swapNodes) {
