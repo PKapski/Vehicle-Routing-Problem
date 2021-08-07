@@ -53,6 +53,8 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod {
                                 && vehicles[vehIndex1].getCurrentFreeLoad() >= node2.getDemand() - node1.getDemand()
                                 && vehicles[vehIndex2].getCurrentFreeLoad() >= node1.getDemand() - node2.getDemand())) {
 
+                            isValidOperation = true;
+
                             ArrayList<Integer> vehRoute1 = routesMap.get(vehIndex1);
                             ArrayList<Integer> vehRoute2 = routesMap.get(vehIndex2);
 
@@ -75,7 +77,6 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod {
                             vehicles[vehIndex2].incrementCurrentFreeLoad(node2.getDemand() - node1.getDemand());
                             vehicles[vehIndex1].setRouteTime(vehicles[vehIndex1].getRouteTime() - veh1TimeChange);
                             vehicles[vehIndex2].setRouteTime(vehicles[vehIndex2].getRouteTime() - veh2TimeChange);
-                            isValidOperation = true;
                         }
                     }
                 } else {
@@ -91,6 +92,8 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod {
 
                         if ((vehIndex1 == vehIndex2 && nodeIndex1 != nodeIndex2)
                                 || (vehIndex1 != vehIndex2 && vehicles[vehIndex2].getCurrentFreeLoad() >= node1.getDemand())) {
+
+                            isValidOperation = true;
 
                             ArrayList<Integer> vehRoute1 = routesMap.get(vehIndex1);
                             ArrayList<Integer> vehRoute2 = routesMap.get(vehIndex2);
@@ -118,7 +121,6 @@ public class SimulatedAnnealingMethod extends VRPSolutionMethod {
                             vehicles[vehIndex2].decrementCurrentFreeLoad(node1.getDemand());
                             vehicles[vehIndex1].setRouteTime(vehicles[vehIndex1].getRouteTime() - veh1TimeChange);
                             vehicles[vehIndex2].setRouteTime(vehicles[vehIndex2].getRouteTime() - veh2TimeChange);
-                            isValidOperation = true;
                         }
                     }
                 }
