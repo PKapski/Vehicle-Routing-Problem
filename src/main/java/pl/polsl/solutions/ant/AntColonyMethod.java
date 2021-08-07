@@ -52,7 +52,6 @@ public class AntColonyMethod extends VRPSolutionMethod {
                 double antSolutionTime = calculateSolutionTime(ant.getRoutesMap());
 
                 if (antSolutionTime < solution.getTotalSolutionTime()) {
-                    System.out.println(antSolutionTime);
                     solution.copyRoutesMap(ant.getRoutesMap());
                     solution.setTotalSolutionTime(antSolutionTime);
                 }
@@ -99,8 +98,10 @@ public class AntColonyMethod extends VRPSolutionMethod {
     public int getNextNodeId(Distance[] distances, double currentFreeLoad, int currentNodeId, LocalTime currentVehicleTime) {
         double[] moveProbabilities = new double[distances.length];
         double probabilitiesSum = 0;
+        int firstNodeThatCanBeVisited = 0;
         for (int i = 0; i < distances.length; i++) {
             if (canVisitNode(i, currentFreeLoad)) {
+                firstNodeThatCanBeVisited = i;
                 double probabilityNominator = pow(pheromones[currentNodeId][i], PHEROMONE_IMPORTANCE) * pow(1.0 / getTravelTimeWithTimeWindows(i, distances[i].getTime(), currentVehicleTime), DISTANCE_IMPORTANCE);
                 probabilitiesSum += probabilityNominator;
                 moveProbabilities[i] = probabilityNominator;
@@ -110,7 +111,7 @@ public class AntColonyMethod extends VRPSolutionMethod {
         }
 
         if (probabilitiesSum == 0) {
-            return 0;
+            return Math.max(0, firstNodeThatCanBeVisited);
         }
 
         for (int i = 1; i < moveProbabilities.length; i++) {
