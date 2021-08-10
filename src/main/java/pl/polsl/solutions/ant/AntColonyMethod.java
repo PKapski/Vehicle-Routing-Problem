@@ -18,10 +18,10 @@ import static java.lang.Math.pow;
 public class AntColonyMethod extends VRPSolutionMethod {
 
     private static final int MAX_ITERATIONS = 1000;
-    private static final int NUMBER_OF_ANTS = 15;
-    private static final int PHEROMONE_IMPORTANCE = 4;
+    private static final int NUMBER_OF_ANTS = 30;
+    private static final int PHEROMONE_IMPORTANCE = 2;
     private static final int PHEROMONE_CONSTANT = 2;
-    private static final int DISTANCE_IMPORTANCE = 2;
+    private static final int DISTANCE_IMPORTANCE = 4;
     private static final double PHEROMONE_EVAPORATION = 0.5;
     private double[][] pheromones;
     private double[][] currentIterationPheromones;
@@ -29,7 +29,7 @@ public class AntColonyMethod extends VRPSolutionMethod {
     @Override
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {
         SolutionResults solution = new GreedyMethod().getSolution(nodes, distances, numOfVehicles, vehicleCapacity, startingTime);
-        initializeVariables(nodes, distances, startingTime, NUMBER_OF_ANTS, solution.getTotalSolutionTime());
+        initializeVariables(nodes, distances, startingTime, NUMBER_OF_ANTS, solution.getTotalSolutionTime(), solution.getRoutesMap());
 
         int vehiclesCount = solution.getRoutesMap().size();
         int iterationCount = 0;
@@ -150,15 +150,24 @@ public class AntColonyMethod extends VRPSolutionMethod {
         return totalSolutionTime;
     }
 
-    public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime, int numberOfAnts, double initialSolutionTime) {
+    public void initializeVariables(List<Node> nodes, Distance[][] distances, LocalTime startingTime, int numberOfAnts, double initialSolutionTime, Map<Integer, ArrayList<Integer>> routesMap) {
         super.initializeVariables(nodes, distances, startingTime);
         nodes.forEach(x -> x.setVisited(false));
         int nodesCount = nodes.size();
         double initialPheromoneValue = numberOfAnts / initialSolutionTime;
         pheromones = new double[nodesCount][nodesCount];
+        for (ArrayList<Integer> list : routesMap.values()) {
+            for (int i = 0; i < list.size() - 1; i++) {
+                pheromones[list.get(i)][list.get(i + 1)] += initialPheromoneValue;
+                pheromones[list.get(i + 1)][list.get(i)] += initialPheromoneValue;
+            }
+        }
+
         for (int i = 0; i < nodesCount; i++) {
             for (int j = 0; j < nodesCount; j++) {
-                pheromones[i][j] = initialPheromoneValue;
+                if (pheromones[i][j] != 0) {
+                    pheromones[i][j] = initialPheromoneValue / 1.2;
+                }
             }
         }
         currentIterationPheromones = new double[nodesCount][nodesCount];
