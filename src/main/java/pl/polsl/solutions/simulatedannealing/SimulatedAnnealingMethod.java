@@ -15,10 +15,10 @@ import java.util.Random;
 
 public class SimulatedAnnealingMethod extends VRPSolutionMethod {
 
-    private static final int ITERATION_ATTEMPTS = 50;
+    private static final int ITERATION_ATTEMPTS = 200;
     private static final double COOLING_FACTOR = 0.99; //range: <0.8,0.99>
-    private static final double TARGET_TEMPERATURE = 1.0;
-    private static final double STARTING_TEMPERATURE = 10.0;
+    private static final double TARGET_TEMPERATURE = 0.0001;
+    private static final double STARTING_TEMPERATURE = 185.0;
 
     @Override
     public SolutionResults getSolution(List<Node> nodes, Distance[][] distances, int numOfVehicles, int vehicleCapacity, LocalTime startingTime) {

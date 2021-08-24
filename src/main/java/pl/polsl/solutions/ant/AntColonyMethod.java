@@ -18,7 +18,7 @@ import static java.lang.Math.pow;
 public class AntColonyMethod extends VRPSolutionMethod {
 
     private static final int MAX_ITERATIONS = 1000;
-    private static final int NUMBER_OF_ANTS = 30;
+    private static final int NUMBER_OF_ANTS = 45;
     private static final int PHEROMONE_IMPORTANCE = 2;
     private static final int PHEROMONE_CONSTANT = 2;
     private static final int DISTANCE_IMPORTANCE = 4;
